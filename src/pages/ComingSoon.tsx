@@ -9,7 +9,7 @@ export function ComingSoon({ feature, phase }: { feature: string; phase: string 
   const sfx = useSfx();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+    <div className="h-[100dvh] flex flex-col items-center justify-center p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

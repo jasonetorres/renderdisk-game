@@ -101,7 +101,7 @@ export function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-ink-900 text-ink-100">
+    <div className="min-h-[100dvh] bg-ink-900 text-ink-100">
 
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden pt-14 pb-8 px-5">

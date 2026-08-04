@@ -27,7 +27,7 @@ export function FinalBossUnlock() {
 
   return (
     <div
-      className="min-h-screen w-full flex flex-col items-center justify-center relative overflow-y-auto px-4 py-8"
+      className="h-[100dvh] w-full flex flex-col items-center justify-center relative overflow-y-auto px-4 py-8"
       style={{
         background:
           'radial-gradient(circle at 50% 35%, #3a3a5c 0%, #27273f 40%, #1a1a2e 100%)',

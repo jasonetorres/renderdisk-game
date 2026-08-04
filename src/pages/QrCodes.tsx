@@ -24,7 +24,7 @@ export function QrCodes() {
   };
 
   return (
-    <div className="min-h-screen bg-ink-900 text-ink-100 p-5 max-w-2xl mx-auto">
+    <div className="min-h-[100dvh] bg-ink-900 text-ink-100 p-5 max-w-2xl mx-auto">
       <div className="mb-6">
         <h1 className="font-pixel text-base text-forest-300 mb-1">RenderDisk QR Code URLs</h1>
         <p className="font-body text-lg text-ink-400 mb-4">

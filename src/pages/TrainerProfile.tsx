@@ -51,7 +51,7 @@ export function TrainerProfile() {
   const xpNeeded      = activeMon ? xpForLevel(activeMon.level) : 0;
 
   return (
-    <div className="min-h-screen flex flex-col px-4 pt-4 pb-6">
+    <div className="min-h-[100dvh] flex flex-col px-4 pt-4 pb-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
         <button onClick={() => navigate(-1)} className="pixel-btn !p-2" aria-label="Back">

@@ -41,7 +41,7 @@ export function Credits() {
   }, [visibleLines]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <div className="h-[100dvh] flex flex-col items-center justify-center p-6 relative overflow-hidden">
       {/* Starfield background */}
       <div className="absolute inset-0 pointer-events-none">
         {Array.from({ length: 20 }).map((_, i) => (

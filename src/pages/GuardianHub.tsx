@@ -135,7 +135,7 @@ function CodeEntry({ onSuccess }: { onSuccess: (entry: BossEntry, code: string) 
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-ink-900">
+    <div className="h-[100dvh] flex flex-col items-center justify-center p-6 bg-ink-900">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-2">

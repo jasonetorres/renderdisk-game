@@ -43,8 +43,8 @@ export default function App() {
   return (
     <BrowserRouter>
       {crt && <CRTOverlay />}
-      <div className="min-h-screen w-full flex justify-center bg-ink-900">
-        <div className="w-full max-w-md min-h-screen relative bg-ink-800 overflow-hidden">
+      <div className="min-h-[100dvh] w-full flex justify-center bg-ink-900">
+        <div className="w-full max-w-md min-h-[100dvh] relative bg-ink-800 overflow-hidden">
           <Routes>
             <Route path="/" element={<Intro />} />
             <Route path="/home" element={<Landing />} />

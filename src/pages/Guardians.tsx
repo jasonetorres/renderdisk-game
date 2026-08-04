@@ -22,7 +22,7 @@ export function Guardians() {
   const totalWins         = GYM_IDS.reduce((sum, id) => sum + (gymProgress?.[id]?.playerWins ?? 0), 0);
 
   return (
-    <div className="min-h-screen flex flex-col p-4 pb-6">
+    <div className="min-h-[100dvh] flex flex-col p-4 pb-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4 mt-2">
         <button

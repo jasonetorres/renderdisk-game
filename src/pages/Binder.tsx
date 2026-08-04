@@ -32,7 +32,7 @@ export function Binder() {
   const completionPct = Math.round((captured / total) * 100);
 
   return (
-    <div className="min-h-screen flex flex-col p-4">
+    <div className="min-h-[100dvh] flex flex-col p-4">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4 mt-2">
         <button

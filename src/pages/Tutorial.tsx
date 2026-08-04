@@ -42,7 +42,7 @@ export function Tutorial() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col p-4 pb-6">
+    <div className="h-[100dvh] flex flex-col p-4 pb-6">
       <AnimatePresence mode="wait">
         <motion.div
           key={step}

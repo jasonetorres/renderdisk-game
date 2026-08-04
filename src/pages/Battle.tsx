@@ -511,7 +511,7 @@ export function Battle() {
 
   if (!config || !player || !enemy) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="h-[100dvh] flex items-center justify-center">
         <PixelText className="text-ink-400">Loading battle...</PixelText>
       </div>
     );

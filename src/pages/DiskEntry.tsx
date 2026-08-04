@@ -130,7 +130,7 @@ export function DiskEntry() {
 
   if (!species || pageState === 'invalid') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <div className="h-[100dvh] flex flex-col items-center justify-center p-6 text-center">
         <PixelText size="md" className="text-rust-400 mb-3">Invalid Disk</PixelText>
         <BodyText className="text-ink-300 mb-6">This code doesn't match any known RenderDisk.</BodyText>
         <PixelButton onClick={() => navigate('/game')}>Go to Menu</PixelButton>
@@ -140,7 +140,7 @@ export function DiskEntry() {
 
   if (pageState === 'locked') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <div className="h-[100dvh] flex flex-col items-center justify-center p-6 text-center">
         <Lock size={40} className="text-ink-500 mb-4" />
         <PixelText size="md" className="text-ink-300 mb-3">Disk Sealed</PixelText>
         <BodyText className="text-ink-400 mb-6">{lockedMessage}</BodyText>
@@ -151,7 +151,7 @@ export function DiskEntry() {
 
   if (pageState === 'already-captured') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+      <div className="h-[100dvh] flex flex-col items-center justify-center p-6 text-center">
         <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 1.6, repeat: Infinity }}>
           {species.spriteImage
             ? <img src={species.spriteImage} alt={species.name} className="w-32 h-32 object-contain mx-auto mb-4" draggable={false} />
@@ -168,7 +168,7 @@ export function DiskEntry() {
   const isNewPlayer = !hasTrainer || !starterDiskClaimed;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+    <div className="h-[100dvh] flex flex-col items-center justify-center p-6">
       {/* Flash ring */}
       <motion.div
         initial={{ scale: 0.6, opacity: 0.8 }}

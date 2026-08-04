@@ -118,7 +118,7 @@ export function Overworld() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-[100dvh] flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-5 pb-3 gap-3">
         {/* Left: back + title */}

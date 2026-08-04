@@ -95,7 +95,7 @@ export function MainMenu() {
   if (booting && bootLine < bootLines.length) {
     return (
       <div
-        className="min-h-screen flex flex-col items-center justify-center p-6 bg-ink-900 cursor-pointer"
+        className="h-[100dvh] flex flex-col items-center justify-center p-6 bg-ink-900 cursor-pointer"
         onClick={handleBoot}
       >
         <div className="w-full max-w-sm space-y-3">
@@ -126,7 +126,7 @@ export function MainMenu() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col p-4 pb-6">
+    <div className="h-[100dvh] flex flex-col p-4 pb-6">
       {/* Title section */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}

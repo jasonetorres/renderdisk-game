@@ -189,7 +189,7 @@ export function Intro() {
   // ── Start screen ─────────────────────────────────────────────────────────
   if (!started) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+      <div className="h-[100dvh] flex flex-col items-center justify-center px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -231,7 +231,7 @@ export function Intro() {
   // ── Cutscene ──────────────────────────────────────────────────────────────
   return (
     <div
-      className="min-h-screen flex flex-col cursor-pointer select-none"
+      className="h-[100dvh] flex flex-col cursor-pointer select-none"
       onClick={isLast && done ? handleBegin : advance}
     >
       {/* Background gradient transition */}

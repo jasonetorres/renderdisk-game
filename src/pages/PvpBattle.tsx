@@ -527,7 +527,7 @@ export function PvpBattle() {
 
   if (!trainer || !myStarterId || !myFighter) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 text-center">
+      <div className="h-[100dvh] flex items-center justify-center p-6 text-center">
         <div>
           <PixelText size="sm" className="text-ink-400 mb-3">No creature yet</PixelText>
           <BodyText className="text-ink-500 text-sm mb-4">Capture a disk first before battling other trainers.</BodyText>
