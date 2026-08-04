@@ -6,6 +6,20 @@ import { getSpecies, getGymForSpecies, GYMS } from '@/data/species';
 import { PixelButton, PixelPanel, PixelText, BodyText, HealthBar, XpBar, ElementTag, RarityTag } from '@/components/ui';
 import { TrainerSprite } from '@/components/trainer/TrainerSprite';
 
+const ACHIEVEMENT_META: Record<string, { icon: string; color: string }> = {
+  'first-capture':  { icon: '💾', color: 'text-forest-400' },
+  'ten-monsters':   { icon: '📀', color: 'text-forest-400' },
+  'full-binder':    { icon: '📚', color: 'text-gold-400'   },
+  'first-win':      { icon: '⚔️', color: 'text-ember-400'  },
+  'five-wins':      { icon: '🔥', color: 'text-ember-400'  },
+  'ten-wins':       { icon: '💪', color: 'text-ember-400'  },
+  'pvp-debut':      { icon: '🆚', color: 'text-violet-400' },
+  'pvp-three':      { icon: '🏆', color: 'text-violet-400' },
+  'first-badge':    { icon: '🛡️', color: 'text-ocean-400'  },
+  'four-badges':    { icon: '💎', color: 'text-ocean-400'  },
+  'creator-fallen': { icon: '👑', color: 'text-gold-400'   },
+};
+
 const BADGE_DEFS = [
   { id: 'forest',   label: 'Forest',   color: 'text-forest-400', bg: 'bg-forest-900 border-forest-600' },
   { id: 'mountain', label: 'Mountain', color: 'text-rust-400',   bg: 'bg-rust-900 border-rust-600' },
@@ -22,8 +36,9 @@ export function TrainerProfile() {
   const _bosses     = useGameStore((s) => s.bossesDefeated.length); // kept for future use
   const battlesWon  = useGameStore((s) => s.battlesWon);
   const potions     = useGameStore((s) => s.inventory.potions);
-  const gymId       = useGameStore((s) => s.gymId);
-  const pvpWins     = useGameStore((s) => s.pvpWins);
+  const gymId        = useGameStore((s) => s.gymId);
+  const pvpWins      = useGameStore((s) => s.pvpWins);
+  const achievements = useGameStore((s) => s.achievements);
   const claimStarterDisk = useGameStore((s) => s.claimStarterDisk);
 
   // Retroactively assign gym for saves created before gym feature existed
@@ -183,6 +198,38 @@ export function TrainerProfile() {
             <PixelText size="xs" className="text-ink-500 block">Potions</PixelText>
             <PixelText size="sm" className="text-ocean-300 block">{potions}</PixelText>
           </div>
+        </div>
+      </PixelPanel>
+
+      {/* Achievements */}
+      <PixelPanel className="p-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <PixelText size="xs" className="text-ink-400">Achievements</PixelText>
+          <PixelText size="xs" className="text-ink-500">
+            {achievements.filter((a) => a.unlockedAt !== null).length}/{achievements.length}
+          </PixelText>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          {achievements.map((a) => {
+            const meta = ACHIEVEMENT_META[a.id] ?? { icon: '🏅', color: 'text-ink-400' };
+            const unlocked = a.unlockedAt !== null;
+            return (
+              <div
+                key={a.id}
+                title={`${a.name}: ${a.description}`}
+                className={`flex flex-col items-center gap-1 py-2 px-1 rounded-lg border-2 transition-opacity ${
+                  unlocked
+                    ? 'bg-ink-800 border-ink-600'
+                    : 'bg-ink-900 border-ink-800 opacity-30'
+                }`}
+              >
+                <span className="text-lg leading-none">{meta.icon}</span>
+                <PixelText size="xs" className={`text-center leading-tight ${unlocked ? meta.color : 'text-ink-600'}`}>
+                  {a.name}
+                </PixelText>
+              </div>
+            );
+          })}
         </div>
       </PixelPanel>
 

@@ -22,7 +22,8 @@ export type GameEventType =
   | 'boss_loss'
   | 'pvp_win'
   | 'pvp_loss'
-  | 'creator';
+  | 'creator'
+  | 'achievement';
 
 export interface GameEvent {
   id: string;
@@ -60,6 +61,8 @@ export function formatGameEvent(e: GameEvent): { icon: string; text: string } {
       return { icon: '🤝', text: `${name} lost to ${detail} in a trainer battle` };
     case 'creator':
       return { icon: '👑', text: `${name} defeated The Creator!!` };
+    case 'achievement':
+      return { icon: '🏅', text: `${name} unlocked: ${detail}` };
     default:
       return { icon: '📡', text: `${name} did something` };
   }

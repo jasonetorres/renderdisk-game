@@ -12,6 +12,21 @@ import type {
 } from '@/types/game';
 import { DEFAULT_SETTINGS } from '@/types/game';
 import { getSpecies, getGymForSpecies } from '@/data/species';
+import { emitGameEvent } from '@/lib/gameEvents';
+
+/** Fire-and-forget: emit game events for any achievements newly unlocked. */
+function emitNewAchievements(
+  prev: Achievement[],
+  next: Achievement[],
+  trainerName: string,
+) {
+  next.forEach((a) => {
+    const was = prev.find((p) => p.id === a.id);
+    if (a.unlockedAt !== null && was?.unlockedAt === null) {
+      emitGameEvent('achievement', trainerName, a.name);
+    }
+  });
+}
 
 const SAVE_VERSION = 2;
 
@@ -132,6 +147,7 @@ export const useGameStore = create<Store>()(
       captureMonster: (speciesId) => {
         const species = getSpecies(speciesId);
         if (!species) return;
+        const prevAchievements = get().achievements;
         set((s) => {
           if (s.collection[speciesId]) return s; // already captured
           // RD-16 through RD-20 are the rare tier — start at level 6
@@ -156,6 +172,8 @@ export const useGameStore = create<Store>()(
           });
           return { collection, achievements };
         });
+        const s = get();
+        if (s.trainer?.name) emitNewAchievements(prevAchievements, s.achievements, s.trainer.name);
       },
 
       addExperience: (speciesId, xp) =>
@@ -189,7 +207,8 @@ export const useGameStore = create<Store>()(
           s.badges.includes(badge) ? s : { badges: [...s.badges, badge] },
         ),
 
-      markBossDefeated: (speciesId) =>
+      markBossDefeated: (speciesId) => {
+        const prevAchievements = get().achievements;
         set((s) => {
           if (s.bossesDefeated.includes(speciesId)) return s;
           const bossesDefeated = [...s.bossesDefeated, speciesId];
@@ -200,17 +219,25 @@ export const useGameStore = create<Store>()(
             return a;
           });
           return { bossesDefeated, achievements };
-        }),
+        });
+        const s = get();
+        if (s.trainer?.name) emitNewAchievements(prevAchievements, s.achievements, s.trainer.name);
+      },
 
-      markCreatorDefeated: () =>
+      markCreatorDefeated: () => {
+        const prevAchievements = get().achievements;
         set((s) => ({
           creatorDefeated: true,
           achievements: s.achievements.map((a) =>
             a.id === 'creator-fallen' && a.unlockedAt === null ? { ...a, unlockedAt: Date.now() } : a,
           ),
-        })),
+        }));
+        const s = get();
+        if (s.trainer?.name) emitNewAchievements(prevAchievements, s.achievements, s.trainer.name);
+      },
 
-      addBattleRecord: (record) =>
+      addBattleRecord: (record) => {
+        const prevAchievements = get().achievements;
         set((s) => {
           const newWins = record.result === 'win' ? s.battlesWon + 1 : s.battlesWon;
           const achievements = s.achievements.map((a) => {
@@ -228,7 +255,10 @@ export const useGameStore = create<Store>()(
             battlesWon: newWins,
             achievements,
           };
-        }),
+        });
+        const s = get();
+        if (s.trainer?.name) emitNewAchievements(prevAchievements, s.achievements, s.trainer.name);
+      },
 
       recordGymWin: (gymId: GymId) =>
         set((s) => {
@@ -241,7 +271,8 @@ export const useGameStore = create<Store>()(
           };
         }),
 
-      markGymBossDefeated: (gymId: GymId, speciesId: string) =>
+      markGymBossDefeated: (gymId: GymId, speciesId: string) => {
+        const prevAchievements = get().achievements;
         set((s) => {
           const existing = s.gymProgress?.[gymId] ?? { playerWins: 0, bossDefeated: false };
           const gymProgress = {
@@ -257,7 +288,10 @@ export const useGameStore = create<Store>()(
             return a;
           });
           return { gymProgress, bossesDefeated, achievements };
-        }),
+        });
+        const s = get();
+        if (s.trainer?.name) emitNewAchievements(prevAchievements, s.achievements, s.trainer.name);
+      },
 
       unlockAchievement: (id) =>
         set((s) => ({
@@ -305,7 +339,8 @@ export const useGameStore = create<Store>()(
         set({ starterDiskClaimed: true, gymId: (gym?.id ?? null) as import('@/types/game').GymId | null });
       },
 
-      recordPvpWin: () =>
+      recordPvpWin: () => {
+        const prevAchievements = get().achievements;
         set((s) => {
           const pvpWins = s.pvpWins + 1;
           const achievements = s.achievements.map((a) => {
@@ -314,7 +349,10 @@ export const useGameStore = create<Store>()(
             return a;
           });
           return { pvpWins, achievements };
-        }),
+        });
+        const s = get();
+        if (s.trainer?.name) emitNewAchievements(prevAchievements, s.achievements, s.trainer.name);
+      },
 
       resetSave: () => set({ ...initialState, settings: get().settings }),
     }),
