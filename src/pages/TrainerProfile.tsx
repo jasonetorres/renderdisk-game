@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { User, Pencil, ArrowLeft, Shield, Swords } from 'lucide-react';
 import { useGameStore, capturedCount, maxHpAtLevel, xpForLevel } from '@/store/gameStore';
-import { getSpecies } from '@/data/species';
+import { getSpecies, getGymForSpecies, GYMS } from '@/data/species';
 import { PixelButton, PixelPanel, PixelText, BodyText, HealthBar, XpBar, ElementTag, RarityTag } from '@/components/ui';
 import { TrainerSprite } from '@/components/trainer/TrainerSprite';
 
@@ -18,9 +19,27 @@ export function TrainerProfile() {
   const collection  = useGameStore((s) => s.collection);
   const badges      = useGameStore((s) => s.badges);
   const captured    = useGameStore((s) => capturedCount(s));
-  const bosses      = useGameStore((s) => s.bossesDefeated.length);
+  const _bosses     = useGameStore((s) => s.bossesDefeated.length); // kept for future use
   const battlesWon  = useGameStore((s) => s.battlesWon);
   const potions     = useGameStore((s) => s.inventory.potions);
+  const gymId       = useGameStore((s) => s.gymId);
+  const pvpWins     = useGameStore((s) => s.pvpWins);
+  const claimStarterDisk = useGameStore((s) => s.claimStarterDisk);
+
+  // Retroactively assign gym for saves created before gym feature existed
+  useEffect(() => {
+    if (!gymId && Object.keys(collection).length > 0) {
+      const firstId = Object.keys(collection)[0];
+      const gym = getGymForSpecies(firstId);
+      if (gym) {
+        // Re-run claimStarterDisk equivalent — just set gymId via internal action
+        useGameStore.setState((s) => ({ ...s, gymId: gym.id as import('@/types/game').GymId }));
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const myGym = gymId ? GYMS.find((g) => g.id === gymId) ?? null : null;
 
   if (!trainer) return null;
 
@@ -58,6 +77,23 @@ export function TrainerProfile() {
           </div>
         </div>
       </PixelPanel>
+
+      {/* Gym assignment */}
+      {myGym && (
+        <PixelPanel className={`p-3 mb-4 border-2 ${myGym.border} ${myGym.bg}/20`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <PixelText size="xs" className="text-ink-400 block mb-1">Your Gym</PixelText>
+              <PixelText size="sm" className={myGym.accent}>{myGym.name}</PixelText>
+              <BodyText className="text-ink-400 text-xs mt-0.5">{myGym.subtitle}</BodyText>
+            </div>
+            <div className="text-right">
+              <PixelText size="xs" className="text-ink-500 block">PvP Wins</PixelText>
+              <PixelText size="md" className={myGym.accent}>{pvpWins}</PixelText>
+            </div>
+          </div>
+        </PixelPanel>
+      )}
 
       {/* Active creature */}
       {activeMon && activeSpecies ? (

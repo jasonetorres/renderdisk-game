@@ -293,6 +293,7 @@ export function PvpBattle() {
   const [log, setLog] = useState<string[]>([]);
   const [outcome, setOutcome] = useState<'victory' | 'defeat' | null>(null);
   const [opponentConnected, setOpponentConnected] = useState(false);
+  const [joinedCode, setJoinedCode] = useState<string | null>(null); // set immediately after code submit
   const [countdown, setCountdown] = useState<number | null>(null);
 
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -484,6 +485,7 @@ export function PvpBattle() {
 
   // ── Challenger join ────────────────────────────────────────────────────────
   function handleJoin(code: string) {
+    setJoinedCode(code);
     setRoomCode(code);
     setMyRole('challenger');
     myRoleRef.current = 'challenger';
@@ -581,8 +583,23 @@ export function PvpBattle() {
       )}
 
       {/* ── Challenger entering code ── */}
-      {mode === 'join' && !battleState && !opponentConnected && (
+      {mode === 'join' && !battleState && !joinedCode && (
         <JoinScreen onJoin={handleJoin} />
+      )}
+      {mode === 'join' && !battleState && joinedCode && !opponentConnected && (
+        <div className="flex-1 flex flex-col items-center justify-center gap-5 px-6">
+          <Loader size={28} className="text-ocean-400 animate-spin" />
+          <PixelText size="sm" className="text-ocean-300">Joining room {joinedCode}…</PixelText>
+          <BodyText className="text-ink-500 text-sm text-center">
+            Waiting for the host to respond.<br />Both of you need to have the app open.
+          </BodyText>
+          <button
+            onClick={() => { setJoinedCode(null); channelRef.current?.unsubscribe(); }}
+            className="text-ink-500 font-body text-xs underline"
+          >
+            Wrong code? Go back
+          </button>
+        </div>
       )}
       {mode === 'join' && !battleState && opponentConnected && (
         <div className="flex-1 flex items-center justify-center">
