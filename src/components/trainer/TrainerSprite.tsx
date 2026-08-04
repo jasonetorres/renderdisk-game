@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { TrainerAppearance } from '@/data/trainer2/types';
 import { composeTrainerSprite } from '@/lib/trainerSprite';
 
@@ -16,30 +16,26 @@ export function TrainerSprite({
   // Keep previous src so there's no blank flash while next compose runs
   const prevSrcRef = useRef<string | null>(null);
 
-  // Key includes ALL appearance fields that affect the composed image
-  const key = useMemo(
-    () =>
-      [
-        appearance.body,
-        appearance.top,
-        appearance.bottom,
-        appearance.shoes,
-        appearance.head,
-        appearance.eyes,
-        appearance.faceAcc ?? 'none',
-        appearance.hair,
-        appearance.headwear ?? 'none',
-        appearance.hairFront,
-        appearance.skinTone ?? 'skin-3',
-        appearance.hairColor ?? '#3d1f0e',
-        appearance.topColor ?? '#1848c0',
-        appearance.bottomColor ?? '#163068',
-        appearance.bottomColor2 ?? '#0a1040',
-        appearance.version,
-      ].join('|'),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [appearance],
-  );
+  // Compute key from primitives — no useMemo, so useEffect always sees the
+  // real current values and fires reliably when any appearance field changes.
+  const key = [
+    appearance.body,
+    appearance.top,
+    appearance.bottom,
+    appearance.shoes,
+    appearance.head,
+    appearance.eyes,
+    appearance.faceAcc ?? 'none',
+    appearance.hair,
+    appearance.headwear ?? 'none',
+    appearance.hairFront,
+    appearance.skinTone ?? 'skin-3',
+    appearance.hairColor ?? '#3d1f0e',
+    appearance.topColor ?? '#1848c0',
+    appearance.bottomColor ?? '#163068',
+    appearance.bottomColor2 ?? '#0a1040',
+    appearance.version,
+  ].join('|');
 
   useEffect(() => {
     let cancelled = false;
@@ -61,7 +57,8 @@ export function TrainerSprite({
     return () => {
       cancelled = true;
     };
-  }, [key]); // key is fully derived — appearance ref churn won't cause extra recompositions
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
 
   const size = 48 * scale;
   const displaySrc = src ?? prevSrcRef.current;
