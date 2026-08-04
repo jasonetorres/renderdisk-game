@@ -9,9 +9,9 @@ import { useGameStore, capturedCount } from '@/store/gameStore';
 import { supabase, type GuestbookEntry, type LeaderboardRow } from '@/lib/supabase';
 
 const FOLLOW_LINKS = [
-  { label: 'Watch', desc: 'The 2024 video — where this started', icon: Youtube, href: 'https://www.youtube.com/results?search_query=jason+lengstorf+renderatl+2024' },
+  { label: 'Watch', desc: 'The 2024 video — where this started', icon: Youtube, href: 'https://www.youtube.com/watch?v=YKeVeG6h4AA&t=1s' },
   { label: 'Follow', desc: '@TasonJorres on X', icon: Twitter, href: 'https://x.com/TasonJorres' },
-  { label: 'Follow', desc: '@WebstormIDE on X', icon: Twitter, href: 'https://x.com/WebstormIDE' },
+  { label: 'Build', desc: '@WebstormIDE on X', icon: Twitter, href: 'https://x.com/WebstormIDE' },
   { label: 'Learn', desc: 'Start.Dev', icon: BookOpen, href: 'https://start.dev' },
 ];
 
