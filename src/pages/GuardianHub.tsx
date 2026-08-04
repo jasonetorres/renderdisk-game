@@ -533,9 +533,9 @@ function BossDashboard({ entry, onLogout }: { entry: BossEntry; onLogout: () => 
   ];
 
   return (
-    <div className="min-h-screen flex flex-col p-4 pb-6">
+    <div className="h-[100dvh] flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4 mt-2 shrink-0">
+      <div className="flex items-center justify-between mb-4 mt-2 px-4 shrink-0">
         <div className="flex items-center gap-2">
           <Shield size={16} className={tc.text} />
           <PixelText size="xs" className={tc.text}>{entry.name}</PixelText>
@@ -546,7 +546,7 @@ function BossDashboard({ entry, onLogout }: { entry: BossEntry; onLogout: () => 
       </div>
 
       {/* Tab bar */}
-      <div className="grid grid-cols-4 gap-1 mb-4 shrink-0">
+      <div className="grid grid-cols-4 gap-1 mb-4 px-4 shrink-0">
         {tabs.map((t) => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`flex flex-col items-center justify-center gap-1 py-2 font-pixel text-[8px] uppercase tracking-wide border-2 transition-all
@@ -560,7 +560,7 @@ function BossDashboard({ entry, onLogout }: { entry: BossEntry; onLogout: () => 
       </div>
 
       {/* Tab content */}
-      <div className="flex-1 overflow-y-auto no-scrollbar">
+      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-4">
         <AnimatePresence mode="wait">
           {tab === 'home' && (
             <motion.div key="home" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>

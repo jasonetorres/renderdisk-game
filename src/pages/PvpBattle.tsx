@@ -299,6 +299,7 @@ export function PvpBattle() {
   const myRoleRef = useRef<'host' | 'challenger'>('host');
   const myFighterRef = useRef<PvpFighter | null>(null);
   const retryRef = useRef<number | null>(null);
+  const battleStartedRef = useRef(false);
 
   // Get my starter creature (first in collection)
   const myStarterId = Object.keys(collection)[0] ?? null;
@@ -327,8 +328,9 @@ export function PvpBattle() {
 
       if (msg.type === 'ping') return;
 
-      // Challenger joined — host sends initial state
-      if (msg.type === 'challenger_ready' && role === 'host') {
+      // Challenger joined — host sends initial state (ignore duplicates after battle starts)
+      if (msg.type === 'challenger_ready' && role === 'host' && !battleStartedRef.current) {
+        battleStartedRef.current = true;
         const opponent = msg.fighter;
         setOpponentFighter(opponent);
         setOpponentConnected(true);
@@ -535,7 +537,7 @@ export function PvpBattle() {
   const oppBattler = myRole === 'host' ? battleState?.challenger : battleState?.host;
 
   return (
-    <div className="min-h-screen flex flex-col bg-ink-900">
+    <div className="h-[100dvh] flex flex-col bg-ink-900 overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b-2 border-ink-700 shrink-0">
         <button onClick={() => { channelRef.current?.unsubscribe(); navigate(-1); }} className="pixel-btn !p-2">

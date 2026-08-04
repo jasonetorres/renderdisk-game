@@ -167,7 +167,7 @@ export function PlayerLobby() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-ink-900">
+    <div className="h-[100dvh] flex flex-col bg-ink-900 overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b-2 border-ink-700 shrink-0">
         <button onClick={() => navigate('/world')} className="pixel-btn !p-2">
