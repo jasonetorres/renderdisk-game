@@ -280,7 +280,10 @@ export function PvpBattle() {
   const addBattleRecord = useGameStore((s) => s.addBattleRecord);
 
   const [mode, setMode] = useState<'host' | 'join' | null>(locState?.mode ?? null);
-  const [roomCode, setRoomCode] = useState(locState?.roomCode ?? '');
+  // Generate code eagerly so it's ready before myFighter populates
+  const [roomCode, setRoomCode] = useState(() =>
+    locState?.roomCode ?? (locState?.mode === 'host' ? genRoomCode() : '')
+  );
   const [battleState, setBattleState] = useState<BattleState | null>(null);
   const [myRole, setMyRole] = useState<'host' | 'challenger'>('host');
   const [myFighter, setMyFighter] = useState<PvpFighter | null>(null);
@@ -442,15 +445,13 @@ export function PvpBattle() {
 
   // ── Host init ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (mode !== 'host' || !trainer || !myFighter) return;
-    const code = genRoomCode();
-    setRoomCode(code);
+    if (mode !== 'host' || !trainer || !roomCode) return;
     setMyRole('host');
     myRoleRef.current = 'host';
-    connectChannel(code, 'host');
+    connectChannel(roomCode, 'host');
     return () => { channelRef.current?.unsubscribe(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, trainer]);
+  }, [mode, trainer, roomCode]);
 
   // ── Challenger join ────────────────────────────────────────────────────────
   function handleJoin(code: string) {
@@ -541,8 +542,13 @@ export function PvpBattle() {
       )}
 
       {/* ── Host waiting for opponent ── */}
-      {mode === 'host' && !battleState && (
+      {mode === 'host' && !battleState && myFighter && (
         <WaitingRoom code={roomCode} myFighter={myFighter} />
+      )}
+      {mode === 'host' && !battleState && !myFighter && (
+        <div className="flex-1 flex items-center justify-center">
+          <Loader size={24} className="text-ocean-400 animate-spin" />
+        </div>
       )}
 
       {/* ── Challenger entering code ── */}
