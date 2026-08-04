@@ -276,6 +276,7 @@ export function PvpBattle() {
 
   const trainer = useGameStore((s) => s.trainer);
   const collection = useGameStore((s) => s.collection);
+  const recordPvpWin = useGameStore((s) => s.recordPvpWin);
   const captureMonster = useGameStore((s) => s.captureMonster);
   const addBattleRecord = useGameStore((s) => s.addBattleRecord);
 
@@ -459,6 +460,7 @@ export function PvpBattle() {
       if (!collection[opponent.speciesId]) {
         captureMonster(opponent.speciesId);
       }
+      recordPvpWin();
       emitGameEvent('pvp_win', me.trainerName, opponent.trainerName);
     } else {
       emitGameEvent('pvp_loss', me.trainerName, opponent.trainerName);

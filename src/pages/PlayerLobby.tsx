@@ -20,15 +20,30 @@ interface DbMessage {
   created_at: string;
 }
 
+const GYM_PILL: Record<string, string> = {
+  roxy:      'border-violet-600 bg-violet-900/60 text-violet-300',
+  danny:     'border-ember-600 bg-ember-900/60 text-ember-300',
+  francesco: 'border-forest-600 bg-forest-900/60 text-forest-300',
+  april:     'border-ocean-600 bg-ocean-900/60 text-ocean-300',
+};
+const GYM_DOT: Record<string, string> = {
+  roxy: 'bg-violet-400', danny: 'bg-ember-400', francesco: 'bg-forest-400', april: 'bg-ocean-400',
+};
+const GYM_LABEL: Record<string, string> = {
+  roxy: 'Roxy', danny: 'Danny', francesco: 'Fran', april: 'April',
+};
+
 interface PresenceMeta {
   trainer_name: string;
   disk_count: number;
+  gym_id: string | null;
 }
 
 export function PlayerLobby() {
   const navigate = useNavigate();
   const trainer = useGameStore((s) => s.trainer);
   const collection = useGameStore((s) => s.collection);
+  const myGymId = useGameStore((s) => s.gymId);
   const diskCount = Object.keys(collection).length;
   const myName = trainer?.name ?? 'Unknown Trainer';
 
@@ -104,7 +119,7 @@ export function PlayerLobby() {
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           setConnected(true);
-          await channel.track({ trainer_name: myName, disk_count: diskCount });
+          await channel.track({ trainer_name: myName, disk_count: diskCount, gym_id: myGymId ?? null });
         }
       });
 
@@ -195,19 +210,24 @@ export function PlayerLobby() {
       {/* Online now */}
       {onlinePlayers.length > 0 && (
         <div className="px-3 py-2 bg-ink-800 border-b-2 border-ink-700 flex gap-2 overflow-x-auto no-scrollbar shrink-0">
-          {onlinePlayers.map((p) => (
-            <div
-              key={p.trainer_name}
-              className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-bold ${
-                p.trainer_name === myName
-                  ? 'border-ocean-500 bg-ocean-900/60 text-ocean-300'
-                  : 'border-ink-600 bg-ink-900 text-ink-300'
-              }`}
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-forest-400 shrink-0" />
-              {p.trainer_name}
-            </div>
-          ))}
+          {onlinePlayers.map((p) => {
+            const gym = p.gym_id ?? '';
+            const pillCls = p.trainer_name === myName
+              ? 'border-ocean-500 bg-ocean-900/60 text-ocean-300'
+              : gym && GYM_PILL[gym]
+              ? GYM_PILL[gym]
+              : 'border-ink-600 bg-ink-900 text-ink-300';
+            const dotCls = gym && GYM_DOT[gym] ? GYM_DOT[gym] : 'bg-forest-400';
+            return (
+              <div key={p.trainer_name} className={`shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-bold ${pillCls}`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${dotCls} shrink-0`} />
+                {p.trainer_name}
+                {gym && GYM_LABEL[gym] && (
+                  <span className="opacity-60 text-[9px] font-normal">({GYM_LABEL[gym]})</span>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

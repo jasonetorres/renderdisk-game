@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Settings, Info, BookOpen, Disc, Map as MapIcon, Star, GraduationCap, Home } from 'lucide-react';
 import { useGameStore, capturedCount } from '@/store/gameStore';
+import { GYMS } from '@/data/species';
 import { audio, useSfx } from '@/audio/engine';
 import { PixelButton, PixelText, BodyText, PixelPanel, AnimatedSprite } from '@/components/ui';
 import { TrainerSprite } from '@/components/trainer/TrainerSprite';
@@ -16,6 +17,9 @@ export function MainMenu() {
   const trainer = useGameStore((s) => s.trainer);
   const count = useGameStore((s) => capturedCount(s));
   const bosses = useGameStore((s) => s.bossesDefeated.length);
+  const gymId = useGameStore((s) => s.gymId);
+  const battlesWon = useGameStore((s) => s.battlesWon);
+  const myGym = gymId ? GYMS.find((g) => g.id === gymId) ?? null : null;
   const audioEnabled = useGameStore((s) => s.settings.audioEnabled);
   const tutorialComplete = useGameStore((s) => s.tutorialComplete);
   const [booting, setBooting] = useState(true);
@@ -169,14 +173,17 @@ export function MainMenu() {
                 <PixelText size="sm" className="text-forest-300 truncate">
                   {trainer.name}
                 </PixelText>
-                <div className="flex gap-3 mt-1">
-                  <span className="pixel-text-xs text-ink-300">
-                    {count}/20 Disks
-                  </span>
-                  <span className="pixel-text-xs text-gold-400">
-                    {bosses}/4 Badges
-                  </span>
+                <div className="flex gap-3 mt-1 flex-wrap">
+                  <span className="pixel-text-xs text-ink-300">{count}/20 Disks</span>
+                  <span className="pixel-text-xs text-gold-400">{bosses}/4 Badges</span>
+                  <span className="pixel-text-xs text-ember-300">{battlesWon}W</span>
                 </div>
+                {myGym && (
+                  <div className={`inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full border text-[9px] font-pixel ${myGym.accent} ${myGym.border} bg-ink-900/80`}>
+                    <span>⚔</span>
+                    <span>{myGym.name}</span>
+                  </div>
+                )}
               </div>
             </div>
           </PixelPanel>

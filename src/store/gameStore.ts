@@ -11,7 +11,7 @@ import type {
   Achievement,
 } from '@/types/game';
 import { DEFAULT_SETTINGS } from '@/types/game';
-import { getSpecies } from '@/data/species';
+import { getSpecies, getGymForSpecies } from '@/data/species';
 
 const SAVE_VERSION = 2;
 
@@ -51,18 +51,24 @@ interface StoreActions {
   completeTutorial: () => void;
   enableDemoMode: () => void;
   claimStarterDisk: (speciesId: string) => void;
+  recordPvpWin: () => void;
   resetSave: () => void;
 }
 
 type Store = GameState & StoreActions;
 
 const ACHIEVEMENTS: Achievement[] = [
-  { id: 'first-capture', name: 'First Contact', description: 'Capture your first monster.', unlockedAt: null },
-  { id: 'ten-monsters', name: 'Disk Collector', description: 'Capture 10 monsters.', unlockedAt: null },
-  { id: 'full-binder', name: 'Complete Binder', description: 'Capture all 20 monsters.', unlockedAt: null },
-  { id: 'first-badge', name: 'Badge of Honor', description: 'Defeat your first Guardian.', unlockedAt: null },
-  { id: 'four-badges', name: 'Guardian Slayer', description: 'Defeat all 4 Guardians.', unlockedAt: null },
-  { id: 'creator-fallen', name: 'The End', description: 'Defeat the Creator.', unlockedAt: null },
+  { id: 'first-capture',   name: 'First Contact',    description: 'Capture your first creature.',         unlockedAt: null },
+  { id: 'ten-monsters',    name: 'Disk Collector',   description: 'Capture 10 creatures.',                unlockedAt: null },
+  { id: 'full-binder',     name: 'Complete Binder',  description: 'Capture all 20 creatures.',            unlockedAt: null },
+  { id: 'first-win',       name: 'Battle Ready',     description: 'Win your first battle.',               unlockedAt: null },
+  { id: 'five-wins',       name: 'On a Roll',        description: 'Win 5 battles.',                       unlockedAt: null },
+  { id: 'ten-wins',        name: 'Gym Grinder',      description: 'Win 10 battles.',                      unlockedAt: null },
+  { id: 'pvp-debut',       name: 'Trainer Duel',     description: 'Win your first PvP battle.',           unlockedAt: null },
+  { id: 'pvp-three',       name: 'PvP Pro',          description: 'Win 3 PvP battles.',                   unlockedAt: null },
+  { id: 'first-badge',     name: 'Badge of Honor',   description: 'Defeat your first Guardian.',          unlockedAt: null },
+  { id: 'four-badges',     name: 'Guardian Slayer',  description: 'Defeat all 4 Guardians.',              unlockedAt: null },
+  { id: 'creator-fallen',  name: 'The End',          description: 'Defeat the Creator.',                  unlockedAt: null },
 ];
 
 const EMPTY_GYM_PROGRESS: Record<GymId, { playerWins: number; bossDefeated: boolean }> = {
@@ -87,6 +93,8 @@ const initialState: GameState = {
   settings: DEFAULT_SETTINGS,
   tutorialComplete: false,
   starterDiskClaimed: false,
+  gymId: null,
+  pvpWins: 0,
   pendingDiskCode: null,
   lastSavedAt: 0,
 };
@@ -203,13 +211,24 @@ export const useGameStore = create<Store>()(
         })),
 
       addBattleRecord: (record) =>
-        set((s) => ({
-          battleHistory: [
-            { ...record, id: crypto.randomUUID(), date: Date.now() },
-            ...s.battleHistory,
-          ].slice(0, 50),
-          battlesWon: record.result === 'win' ? s.battlesWon + 1 : s.battlesWon,
-        })),
+        set((s) => {
+          const newWins = record.result === 'win' ? s.battlesWon + 1 : s.battlesWon;
+          const achievements = s.achievements.map((a) => {
+            if (record.result !== 'win') return a;
+            if (a.id === 'first-win'  && a.unlockedAt === null) return { ...a, unlockedAt: Date.now() };
+            if (a.id === 'five-wins'  && a.unlockedAt === null && newWins >= 5)  return { ...a, unlockedAt: Date.now() };
+            if (a.id === 'ten-wins'   && a.unlockedAt === null && newWins >= 10) return { ...a, unlockedAt: Date.now() };
+            return a;
+          });
+          return {
+            battleHistory: [
+              { ...record, id: crypto.randomUUID(), date: Date.now() },
+              ...s.battleHistory,
+            ].slice(0, 50),
+            battlesWon: newWins,
+            achievements,
+          };
+        }),
 
       recordGymWin: (gymId: GymId) =>
         set((s) => {
@@ -282,8 +301,20 @@ export const useGameStore = create<Store>()(
 
       claimStarterDisk: (speciesId) => {
         get().captureMonster(speciesId);
-        set({ starterDiskClaimed: true });
+        const gym = getGymForSpecies(speciesId);
+        set({ starterDiskClaimed: true, gymId: (gym?.id ?? null) as import('@/types/game').GymId | null });
       },
+
+      recordPvpWin: () =>
+        set((s) => {
+          const pvpWins = s.pvpWins + 1;
+          const achievements = s.achievements.map((a) => {
+            if (a.id === 'pvp-debut' && a.unlockedAt === null) return { ...a, unlockedAt: Date.now() };
+            if (a.id === 'pvp-three' && a.unlockedAt === null && pvpWins >= 3) return { ...a, unlockedAt: Date.now() };
+            return a;
+          });
+          return { pvpWins, achievements };
+        }),
 
       resetSave: () => set({ ...initialState, settings: get().settings }),
     }),

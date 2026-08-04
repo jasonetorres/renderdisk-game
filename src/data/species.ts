@@ -287,6 +287,11 @@ export interface GymDef {
   guardianIndex: number;
 }
 
+/** Returns the gym this species belongs to based on its gym's speciesPool. */
+export function getGymForSpecies(speciesId: string): GymDef | null {
+  return GYMS.find((g) => g.speciesPool.includes(speciesId)) ?? null;
+}
+
 export const GYMS: GymDef[] = [
   {
     id: 'roxy',

@@ -25,6 +25,7 @@ import {
   type BattleConfig,
 } from '@/game/battle';
 import { PixelButton, PixelText, BodyText, PixelPanel, HealthBar, ElementTag, XpBar } from '@/components/ui';
+import { supabase } from '@/lib/supabase';
 
 type Phase = 'boss-intro' | 'vs-flash' | 'intro' | 'menu' | 'ability-select' | 'item-select' | 'swap-select' | 'animating' | 'victory' | 'defeat';
 
@@ -341,6 +342,14 @@ export function Battle() {
       // Capture wild/guardian monster — show flash then victory
       if (config?.type === 'wild' || config?.type === 'guardian') {
         captureMonster(enemy.speciesId);
+        // Insert to leaderboard so battle captures show up (same as disk scan captures)
+        const trainerNameForLB = useGameStore.getState().trainer?.name;
+        if (trainerNameForLB) {
+          supabase
+            .from('leaderboard_entries')
+            .insert({ trainer_name: trainerNameForLB, disk_id: enemy.speciesId })
+            .then(({ error }) => { if (error && error.code !== '23505') console.warn('Leaderboard insert failed:', error.message); });
+        }
         sfx.capture();
         setCaptureFlash(true);
         await sleep(1200);
@@ -563,7 +572,7 @@ export function Battle() {
   const btnBlue  = "flex-1 rounded-lg pixel-text-sm font-bold text-white bg-ocean-700 border-b-4 border-ocean-900 active:border-b-0 active:translate-y-1 transition-transform disabled:opacity-40";
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-ink-900">
+    <div className="h-[100dvh] flex flex-col overflow-hidden bg-ink-900">
 
       {/* ── BOSS INTRO CUTSCENE ── */}
       <AnimatePresence>

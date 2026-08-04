@@ -234,27 +234,58 @@ function HomeTab({ entry }: { entry: BossEntry }) {
 
 // ─── Leaderboard tab ──────────────────────────────────────────────────────────
 
+interface EnrichedRow {
+  trainer_name: string;
+  unique_disks: number;
+  pvp_wins: number;
+  boss_wins: number;
+  score: number;
+  latest_scan: string;
+}
+
 function LeaderboardTab() {
-  const [rows, setRows] = useState<LeaderboardRow[]>([]);
+  const [rows, setRows] = useState<EnrichedRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const { data, error } = await supabase.from('leaderboard_entries').select('trainer_name, disk_id, created_at');
-      if (!error && data) {
-        const map: Record<string, { disks: Set<string>; latest: string }> = {};
-        for (const row of data) {
-          if (!map[row.trainer_name]) map[row.trainer_name] = { disks: new Set(), latest: row.created_at };
+      const [diskRes, eventRes] = await Promise.all([
+        supabase.from('leaderboard_entries').select('trainer_name, disk_id, created_at'),
+        supabase.from('game_events').select('trainer_name, event_type').in('event_type', ['pvp_win', 'boss_win', 'creator']),
+      ]);
+
+      const map: Record<string, { disks: Set<string>; pvp: number; boss: number; latest: string }> = {};
+
+      if (!diskRes.error && diskRes.data) {
+        for (const row of diskRes.data) {
+          if (!map[row.trainer_name]) map[row.trainer_name] = { disks: new Set(), pvp: 0, boss: 0, latest: row.created_at };
           map[row.trainer_name].disks.add(row.disk_id);
           if (row.created_at > map[row.trainer_name].latest) map[row.trainer_name].latest = row.created_at;
         }
-        const sorted = Object.entries(map)
-          .map(([trainer_name, v]) => ({ trainer_name, unique_disks: v.disks.size, latest_scan: v.latest }))
-          .sort((a, b) => b.unique_disks - a.unique_disks || a.latest_scan.localeCompare(b.latest_scan))
-          .slice(0, 30);
-        setRows(sorted);
       }
+
+      if (!eventRes.error && eventRes.data) {
+        for (const row of eventRes.data) {
+          if (!map[row.trainer_name]) map[row.trainer_name] = { disks: new Set(), pvp: 0, boss: 0, latest: '' };
+          if (row.event_type === 'pvp_win') map[row.trainer_name].pvp += 1;
+          if (row.event_type === 'boss_win' || row.event_type === 'creator') map[row.trainer_name].boss += 1;
+        }
+      }
+
+      const sorted = Object.entries(map)
+        .map(([trainer_name, v]) => ({
+          trainer_name,
+          unique_disks: v.disks.size,
+          pvp_wins: v.pvp,
+          boss_wins: v.boss,
+          // Score: each disk = 10, each boss = 20, each pvp win = 5
+          score: v.disks.size * 10 + v.boss * 20 + v.pvp * 5,
+          latest_scan: v.latest,
+        }))
+        .sort((a, b) => b.score - a.score || a.latest_scan.localeCompare(b.latest_scan))
+        .slice(0, 30);
+      setRows(sorted);
       setLoading(false);
     }
     load();
@@ -265,26 +296,33 @@ function LeaderboardTab() {
 
   return (
     <div className="space-y-2 pb-4">
-      <PixelText size="xs" className="text-ink-400 mb-3">Top Trainers — {rows.length} players</PixelText>
+      <div className="flex gap-4 mb-3 text-[9px] font-pixel text-ink-500 px-1">
+        <span className="flex-1">TRAINER</span>
+        <span className="text-gold-500">PTS</span>
+        <span className="text-forest-400">💾</span>
+        <span className="text-ember-400">⚔</span>
+        <span className="text-ocean-400">🏆</span>
+      </div>
       {rows.map((row, i) => (
         <div key={row.trainer_name}
-          className={`flex items-center gap-3 px-3 py-2 border ${
+          className={`flex items-center gap-2 px-3 py-2 border ${
             i === 0 ? 'border-gold-500 bg-gold-900/20' :
             i === 1 ? 'border-ink-500 bg-ink-800' :
             i === 2 ? 'border-ember-700 bg-ember-900/20' :
             'border-ink-700 bg-ink-800/50'
           }`}>
-          <span className={`font-pixel text-xs w-6 text-center shrink-0 ${
+          <span className={`font-pixel text-xs w-5 text-center shrink-0 ${
             i === 0 ? 'text-gold-400' : i === 1 ? 'text-ink-300' : i === 2 ? 'text-ember-400' : 'text-ink-500'
           }`}>{i + 1}</span>
-          {i === 0 && <Crown size={12} className="text-gold-400 shrink-0" />}
+          {i === 0 && <Crown size={11} className="text-gold-400 shrink-0" />}
           <span className="font-body text-sm text-ink-200 flex-1 truncate">{row.trainer_name}</span>
-          <div className="flex items-center gap-1 shrink-0">
-            <Disc size={12} className="text-ink-400" />
-            <span className="font-pixel text-xs text-ink-300">{row.unique_disks}</span>
-          </div>
+          <span className="font-pixel text-xs text-gold-300 w-8 text-right shrink-0">{row.score}</span>
+          <span className="font-pixel text-xs text-forest-400 w-5 text-right shrink-0">{row.unique_disks}</span>
+          <span className="font-pixel text-xs text-ember-400 w-5 text-right shrink-0">{row.boss_wins}</span>
+          <span className="font-pixel text-xs text-ocean-400 w-5 text-right shrink-0">{row.pvp_wins}</span>
         </div>
       ))}
+      <p className="text-ink-600 text-[9px] font-body text-center pt-1">💾×10 + ⚔×20 + 🏆×5</p>
     </div>
   );
 }

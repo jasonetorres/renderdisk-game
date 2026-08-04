@@ -126,6 +126,8 @@ export interface GameState {
   settings: GameSettings;
   tutorialComplete: boolean;
   starterDiskClaimed: boolean;
+  gymId: GymId | null;       // gym the player is assigned to (from starter disk species pool)
+  pvpWins: number;
   pendingDiskCode: string | null;
   lastSavedAt: number;
 }
