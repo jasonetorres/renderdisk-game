@@ -66,17 +66,29 @@ export function PlayerLobby() {
     channelRef.current = channel;
 
     const syncOnline = () => {
-      const state = channel.presenceState() as Record<string, { metas: PresenceMeta[] }>;
+      // presenceState() returns Record<string, Array<Payload & { presence_ref: string }>>
+      const state = channel.presenceState<PresenceMeta>();
       const list: PresenceMeta[] = [];
-      for (const { metas } of Object.values(state)) {
-        if (metas.length > 0) list.push(metas[metas.length - 1]);
+      for (const presences of Object.values(state)) {
+        for (const p of presences) {
+          list.push({ trainer_name: p.trainer_name, disk_count: p.disk_count });
+        }
       }
-      list.sort((a, b) => b.disk_count - a.disk_count);
-      setOnlinePlayers(list);
+      // Deduplicate by trainer name (same person in multiple tabs)
+      const seen = new Set<string>();
+      const deduped = list.filter((p) => {
+        if (seen.has(p.trainer_name)) return false;
+        seen.add(p.trainer_name);
+        return true;
+      });
+      deduped.sort((a, b) => b.disk_count - a.disk_count);
+      setOnlinePlayers(deduped);
     };
 
     channel
       .on('presence', { event: 'sync' }, syncOnline)
+      .on('presence', { event: 'join' }, syncOnline)
+      .on('presence', { event: 'leave' }, syncOnline)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'lounge_messages' },

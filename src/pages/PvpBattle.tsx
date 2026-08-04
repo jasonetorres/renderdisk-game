@@ -298,6 +298,7 @@ export function PvpBattle() {
   const stateRef = useRef<BattleState | null>(null);
   const myRoleRef = useRef<'host' | 'challenger'>('host');
   const myFighterRef = useRef<PvpFighter | null>(null);
+  const retryRef = useRef<number | null>(null);
 
   // Get my starter creature (first in collection)
   const myStarterId = Object.keys(collection)[0] ?? null;
@@ -356,6 +357,7 @@ export function PvpBattle() {
 
       // Host confirmed — challenger updates
       if (msg.type === 'host_ready' && role === 'challenger') {
+        if (retryRef.current) { clearTimeout(retryRef.current); retryRef.current = null; }
         setOpponentFighter(msg.fighter);
         setOpponentConnected(true);
         stateRef.current = msg.state;
@@ -409,16 +411,22 @@ export function PvpBattle() {
         setLog(msg.state.log);
         handleEnd(msg.winner, msg.state);
       }
-    }).subscribe();
-
-    // Challenger: announce presence after subscribe
-    if (role === 'challenger') {
-      setTimeout(() => {
+    }).subscribe((status) => {
+      if (status !== 'SUBSCRIBED' || role !== 'challenger') return;
+      // Announce once subscribed. Retry every 2s until host responds (max 10 tries).
+      let tries = 0;
+      const tryAnnounce = () => {
+        if (tries >= 10) return;
+        tries++;
         if (myFighterRef.current) {
           broadcast({ type: 'challenger_ready', fighter: myFighterRef.current });
         }
-      }, 600);
-    }
+        // Keep retrying until host_ready is received (opponentConnected flips)
+        retryRef.current = window.setTimeout(tryAnnounce, 2000);
+      };
+      // Small delay so host channel is definitely ready
+      setTimeout(tryAnnounce, 300);
+    });
   }, [broadcast]);
 
   // ── End of battle ──────────────────────────────────────────────────────────
@@ -449,7 +457,10 @@ export function PvpBattle() {
     setMyRole('host');
     myRoleRef.current = 'host';
     connectChannel(roomCode, 'host');
-    return () => { channelRef.current?.unsubscribe(); };
+    return () => {
+      channelRef.current?.unsubscribe();
+      if (retryRef.current) clearTimeout(retryRef.current);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, trainer, roomCode]);
 
