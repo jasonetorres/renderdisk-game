@@ -345,13 +345,20 @@ export function PvpBattle() {
         stateRef.current = initial;
         setBattleState(initial);
         broadcast({ type: 'host_ready', fighter: myF, state: initial });
-        // countdown
+        // countdown — transition phase to 'select' when it ends
         let n = 3;
         setCountdown(n);
         const iv = setInterval(() => {
           n--;
-          if (n > 0) setCountdown(n);
-          else { clearInterval(iv); setCountdown(null); }
+          if (n > 0) {
+            setCountdown(n);
+          } else {
+            clearInterval(iv);
+            setCountdown(null);
+            const ready = { ...stateRef.current!, phase: 'select' as const };
+            stateRef.current = ready;
+            setBattleState(ready);
+          }
         }, 1000);
       }
 
@@ -366,8 +373,15 @@ export function PvpBattle() {
         setCountdown(n);
         const iv = setInterval(() => {
           n--;
-          if (n > 0) setCountdown(n);
-          else { clearInterval(iv); setCountdown(null); }
+          if (n > 0) {
+            setCountdown(n);
+          } else {
+            clearInterval(iv);
+            setCountdown(null);
+            const ready = { ...stateRef.current!, phase: 'select' as const };
+            stateRef.current = ready;
+            setBattleState(ready);
+          }
         }, 1000);
       }
 
@@ -593,36 +607,39 @@ export function PvpBattle() {
       {/* ── Active battle ── */}
       {battleState && !outcome && countdown === null && (
         <div className="flex-1 flex flex-col">
+
+          {/* Trainer names bar */}
+          <div className="grid grid-cols-2 border-b-2 border-ink-700 shrink-0">
+            <div className="px-3 py-2 border-r border-ink-700">
+              <PixelText size="xs" className="text-ocean-400">
+                {myBattler?.trainerName ?? 'You'}
+              </PixelText>
+            </div>
+            <div className="px-3 py-2 text-right">
+              <PixelText size="xs" className="text-ember-400">
+                {oppBattler?.trainerName ?? 'Rival'}
+              </PixelText>
+            </div>
+          </div>
+
           {/* Fighters */}
-          <div className="grid grid-cols-2 gap-4 px-4 pt-4 pb-2">
-            <div>
-              <BodyText className="text-ocean-400 text-xs mb-2 block font-pixel">YOU</BodyText>
-              {myBattler && <FighterSprite fighter={myBattler} side="left" />}
-            </div>
-            <div>
-              <BodyText className="text-ember-400 text-xs mb-2 block font-pixel text-right">RIVAL</BodyText>
-              {oppBattler && <FighterSprite fighter={oppBattler} side="right" dimmed={movePicked} />}
-            </div>
+          <div className="grid grid-cols-2 gap-3 px-4 pt-5 pb-3 shrink-0">
+            <div>{myBattler && <FighterSprite fighter={myBattler} side="left" />}</div>
+            <div>{oppBattler && <FighterSprite fighter={oppBattler} side="right" dimmed={movePicked} />}</div>
           </div>
 
-          {/* Turn indicator */}
-          <div className="px-4 py-2 text-center">
-            <BodyText className="text-ink-500 text-xs">Turn {battleState.turn}</BodyText>
+          {/* Turn + log */}
+          <div className="mx-4 mb-3 border border-ink-700 bg-ink-800/60 px-3 py-2 space-y-1 shrink-0">
+            <BodyText className="text-ink-500 text-xs block">Turn {battleState.turn}</BodyText>
+            {log.slice(-3).map((l, i) => (
+              <BodyText key={i} className="text-ink-300 text-xs block">{l}</BodyText>
+            ))}
           </div>
 
-          {/* Log */}
-          {log.length > 0 && (
-            <div className="mx-4 mb-3 border border-ink-700 bg-ink-800/60 px-3 py-2 space-y-1">
-              {log.slice(-3).map((l, i) => (
-                <BodyText key={i} className="text-ink-300 text-xs block">{l}</BodyText>
-              ))}
-            </div>
-          )}
-
-          {/* Move selection */}
-          <div className="px-4 pb-4 mt-auto">
+          {/* Move selection — pinned to bottom */}
+          <div className="px-4 pb-5 mt-auto shrink-0">
             {movePicked ? (
-              <div className="flex items-center justify-center gap-2 py-4">
+              <div className="flex items-center justify-center gap-2 py-5 border-2 border-ink-700 bg-ink-800/40">
                 <Loader size={16} className="text-ocean-400 animate-spin" />
                 <BodyText className="text-ink-400 text-sm">Waiting for opponent...</BodyText>
               </div>
@@ -630,7 +647,7 @@ export function PvpBattle() {
               <>
                 <PixelText size="xs" className="text-ink-400 block mb-2">Choose a move:</PixelText>
                 <div className="grid grid-cols-2 gap-2">
-                  {(myBattler?.abilities ?? myFighter.abilities).map((id) => (
+                  {(myBattler?.abilities ?? myFighter?.abilities ?? []).map((id) => (
                     <AbilityBtn key={id} abilityId={id} disabled={movePicked} onPick={() => pickMove(id)} />
                   ))}
                 </div>
