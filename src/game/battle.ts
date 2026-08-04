@@ -128,15 +128,15 @@ export function calculateDamage(
     ? defender.specialDefense * stageMultiplier(isCritical ? Math.min(0, defender.stages.spDef) : defender.stages.spDef)
     : defender.defense * stageMultiplier(isCritical ? Math.min(0, defender.stages.defense) : defender.stages.defense);
 
-  // Base damage formula — /5 keeps it from collapsing; +level*2 ensures every
-  // hit is meaningful and battles resolve in 3-6 turns at low level.
-  const base = Math.floor(Math.floor((2 * attacker.level) / 5 + 2) * ability.power * atkStat / defStat) / 5 + attacker.level * 2;
+  // Base damage formula — targets 3-5 hits for wild, 6-10 for bosses.
+  // Divisor /10 keeps numbers sane across levels 1-30.
+  const base = Math.floor(Math.floor((2 * attacker.level) / 5 + 2) * ability.power * atkStat / defStat) / 10 + 2;
 
   // Type effectiveness
   const effectiveness = typeMultiplier(ability.element, defender.element);
 
-  // STAB (same type attack bonus)
-  const stab = ability.element === attacker.element ? 1.5 : 1;
+  // STAB (same type attack bonus) — 1.2x keeps it meaningful without stacking brutally
+  const stab = ability.element === attacker.element ? 1.2 : 1;
 
   // Critical multiplier
   const critMult = isCritical ? 1.5 : 1;

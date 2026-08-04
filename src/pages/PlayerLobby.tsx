@@ -1,10 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, Loader } from 'lucide-react';
+import { ArrowLeft, Send, Loader, Shield, Swords } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useGameStore } from '@/store/gameStore';
 import { PixelText, BodyText } from '@/components/ui';
+import { GUARDIANS, CREATOR } from '@/data/species';
+
+const BOSS_NAMES = new Set([...GUARDIANS.map((g) => g.trainerName), CREATOR.name]);
 
 const CHANNEL_NAME = 'renderdisk-lounge-v2';
 const MSG_LIMIT = 150;
@@ -159,11 +162,21 @@ export function PlayerLobby() {
           <ArrowLeft size={16} />
         </button>
         <PixelText size="md" className="text-ocean-400">Players Lounge</PixelText>
-        <div className="ml-auto flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-forest-400' : 'bg-rust-400'} animate-pulse`} />
-          <BodyText className={`text-xs ${connected ? 'text-forest-400' : 'text-rust-400'}`}>
-            {connected ? `${onlinePlayers.length} online` : 'Connecting…'}
-          </BodyText>
+        <div className="ml-auto flex items-center gap-3">
+          <button
+            onClick={() => navigate('/pvp', { state: { mode: 'join' } })}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 border-2 border-ember-600 bg-ember-900/30 active:scale-95 transition-transform"
+            title="Enter a battle code"
+          >
+            <Swords size={12} className="text-ember-400" />
+            <span className="font-pixel text-[9px] text-ember-300">Battle</span>
+          </button>
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full ${connected ? 'bg-forest-400' : 'bg-rust-400'} animate-pulse`} />
+            <BodyText className={`text-xs ${connected ? 'text-forest-400' : 'text-rust-400'}`}>
+              {connected ? `${onlinePlayers.length} online` : 'Connecting…'}
+            </BodyText>
+          </div>
         </div>
       </div>
 
@@ -204,6 +217,7 @@ export function PlayerLobby() {
 
           {messages.map((msg) => {
             const isMe = msg.trainer_name === myName;
+            const isBoss = BOSS_NAMES.has(msg.trainer_name);
             return (
               <motion.div
                 key={msg.id}
@@ -213,9 +227,14 @@ export function PlayerLobby() {
               >
                 {/* Name + time — clean, small */}
                 <div className={`flex items-center gap-2 px-1 ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-                  <span className={`text-xs font-bold ${isMe ? 'text-ocean-400' : 'text-ink-400'}`}>
+                  <span className={`text-xs font-bold ${isMe ? 'text-ocean-400' : isBoss ? 'text-gold-400' : 'text-ink-400'}`}>
                     {msg.trainer_name}
                   </span>
+                  {isBoss && !isMe && (
+                    <span className="flex items-center gap-0.5 text-[9px] font-pixel text-gold-500 border border-gold-700 bg-gold-900/40 px-1 py-0.5 rounded-sm">
+                      <Shield size={8} className="inline" /> BOSS
+                    </span>
+                  )}
                   <span className="text-[10px] text-ink-600">{formatTime(msg.created_at)}</span>
                 </div>
 
@@ -223,6 +242,8 @@ export function PlayerLobby() {
                 <div className={`max-w-[78%] px-3 py-2.5 rounded-2xl ${
                   isMe
                     ? 'bg-ocean-800 border border-ocean-700 rounded-tr-sm'
+                    : isBoss
+                    ? 'bg-gold-900/30 border border-gold-700 rounded-tl-sm'
                     : 'bg-ink-800 border border-ink-600 rounded-tl-sm'
                 }`}>
                   <p className="text-sm text-ink-100 break-words leading-snug">{msg.text}</p>

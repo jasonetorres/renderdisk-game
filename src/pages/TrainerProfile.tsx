@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { User, Pencil, ArrowLeft, Shield } from 'lucide-react';
+import { User, Pencil, ArrowLeft, Shield, Swords } from 'lucide-react';
 import { useGameStore, capturedCount, maxHpAtLevel, xpForLevel } from '@/store/gameStore';
 import { getSpecies } from '@/data/species';
 import { PixelButton, PixelPanel, PixelText, BodyText, HealthBar, XpBar, ElementTag, RarityTag } from '@/components/ui';
@@ -150,8 +150,13 @@ export function TrainerProfile() {
         </div>
       </PixelPanel>
 
-      <div className="mt-auto">
-        <PixelButton variant="primary" fullWidth onClick={() => navigate('/trainer/edit')}>
+      <div className="mt-auto flex flex-col gap-2">
+        {activeId && (
+          <PixelButton variant="primary" fullWidth onClick={() => navigate('/pvp', { state: { mode: 'host' } })}>
+            <Swords size={16} /> Battle a Trainer
+          </PixelButton>
+        )}
+        <PixelButton fullWidth onClick={() => navigate('/trainer/edit')}>
           <Pencil size={16} /> Edit Trainer
         </PixelButton>
       </div>

@@ -4,14 +4,14 @@ import type { Element } from '@/types/game';
 // 2.0 = super effective, 0.5 = not very effective, 0 = no effect, 1 = neutral.
 
 const CHART: Partial<Record<Element, Partial<Record<Element, number>>>> = {
-  Nature: { Water: 2, Fire: 0.5, Wind: 0.5, Steel: 0.5, Nature: 0.5 },
-  Fire:   { Nature: 2, Steel: 2, Water: 0.5, Fire: 0.5, Earth: 0.5 },
-  Water:  { Fire: 2, Earth: 2, Water: 0.5, Nature: 2, Tech: 1 },
-  Wind:   { Nature: 2, Earth: 0.5, Steel: 0.5, Wind: 0.5 },
-  Earth:  { Fire: 2, Steel: 2, Wind: 0.5, Earth: 0.5, Nature: 0.5 },
+  Nature: { Water: 1.5, Fire: 0.5, Wind: 0.5, Steel: 0.5, Nature: 0.5 },
+  Fire:   { Nature: 1.5, Steel: 1.5, Water: 0.5, Fire: 0.5, Earth: 0.5 },
+  Water:  { Fire: 1.5, Earth: 1.5, Water: 0.5, Nature: 1.5, Tech: 1 },
+  Wind:   { Nature: 1.5, Earth: 0.5, Steel: 0.5, Wind: 0.5 },
+  Earth:  { Fire: 1.5, Steel: 1.5, Wind: 0.5, Earth: 0.5, Nature: 0.5 },
   Steel:  { Nature: 1, Fire: 0.5, Steel: 0.5, Earth: 1 },
-  Tech:   { Water: 0.5, Arcane: 2, Steel: 1, Nature: 1 },
-  Arcane: { Tech: 2, Arcane: 0.5, Nature: 1, Fire: 1 },
+  Tech:   { Water: 0.5, Arcane: 1.5, Steel: 1, Nature: 1 },
+  Arcane: { Tech: 1.5, Arcane: 0.5, Nature: 1, Fire: 1 },
 };
 
 export function typeMultiplier(attacker: Element, defender: Element): number {
@@ -20,8 +20,7 @@ export function typeMultiplier(attacker: Element, defender: Element): number {
 
 export function effectivenessLabel(mult: number): string {
   if (mult === 0) return 'No effect...';
-  if (mult >= 2) return 'Super effective!';
-  if (mult >= 1.5) return 'Very effective!';
+  if (mult >= 1.5) return 'Super effective!';
   if (mult <= 0.5) return 'Not very effective...';
   return '';
 }

@@ -26,7 +26,7 @@ export function Guardians() {
       {/* Header */}
       <div className="flex items-center gap-3 mb-4 mt-2">
         <button
-          onClick={() => { sfx.cancel(); navigate('/'); }}
+          onClick={() => { sfx.cancel(); navigate('/world'); }}
           className="pixel-btn !p-2"
           aria-label="Back"
         >

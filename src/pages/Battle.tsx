@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Swords, FlaskRound, RefreshCw, LogOut } from 'lucide-react';
 import { useGameStore, maxHpAtLevel, xpForLevel } from '@/store/gameStore';
+import { emitGameEvent } from '@/lib/gameEvents';
 import { audio, useSfx } from '@/audio/engine';
 import { getSpecies, getAbility, GUARDIANS, CREATOR } from '@/data/species';
 import { effectivenessLabel, typeMultiplier } from '@/data/elements';
@@ -52,6 +53,7 @@ export function Battle() {
   const spendPotion = useGameStore((s) => s.spendPotion);
   const potions = useGameStore((s) => s.inventory.potions);
   const battleSpeed = useGameStore((s) => s.settings.battleSpeed);
+  const myTrainerName = useGameStore((s) => s.trainer?.name ?? 'Unknown');
 
   const [player, setPlayer] = useState<Combatant | null>(null);
   const [enemy, setEnemy] = useState<Combatant | null>(null);
@@ -323,6 +325,7 @@ export function Battle() {
           const badgeMap = ['forest', 'mountain', 'ruins', 'digital'] as const;
           addBadge(badgeMap[config.guardianIndex]);
           addLog({ text: `You defeated ${guardian.trainerName}!`, type: 'info' });
+          emitGameEvent('boss_win', myTrainerName, guardian.trainerName);
         }
       }
 
@@ -332,6 +335,7 @@ export function Battle() {
       }
       if (config?.type === 'creator') {
         markCreatorDefeated();
+        emitGameEvent('creator', myTrainerName);
       }
 
       // Capture wild/guardian monster — show flash then victory
@@ -352,7 +356,7 @@ export function Battle() {
       await sleep(400);
       setPhase('victory');
     },
-    [player, enemy, config, addExperience, addBattleRecord, markGymBossDefeated, recordGymWin, markCreatorDefeated, captureMonster, addBadge, addLog, sfx],
+    [player, enemy, config, myTrainerName, addExperience, addBattleRecord, markGymBossDefeated, recordGymWin, markCreatorDefeated, captureMonster, addBadge, addLog, sfx],
   );
 
   const handleDefeat = useCallback(() => {
@@ -363,7 +367,10 @@ export function Battle() {
       result: 'loss',
       monsterUsed: player?.speciesId || '',
     });
-  }, [config, enemy, player, addBattleRecord, spendPotion]);
+    if (config?.type === 'guardian' || config?.type === 'creator') {
+      emitGameEvent('boss_loss', myTrainerName, config.enemyName ?? enemy?.name ?? 'a guardian');
+    }
+  }, [config, enemy, player, myTrainerName, addBattleRecord, spendPotion]);
 
   // ── Actions ──────────────────────────────────────────────────────────────────
 

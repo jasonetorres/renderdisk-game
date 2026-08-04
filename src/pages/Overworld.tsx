@@ -99,7 +99,7 @@ export function Overworld() {
     openCreatureSelect({
       type: 'guardian',
       enemySpeciesId: guardian.speciesId,
-      enemyLevel: 6 + gym.guardianIndex * 2,
+      enemyLevel: [12, 15, 18, 21][gym.guardianIndex] ?? 12,
       enemyName: guardian.trainerName,
       guardianIndex: gym.guardianIndex,
       gymId: gym.id as GymId,
@@ -112,7 +112,7 @@ export function Overworld() {
     openCreatureSelect({
       type: 'creator',
       enemySpeciesId: CREATOR.speciesId,
-      enemyLevel: 18,
+      enemyLevel: 28,
       enemyName: CREATOR.name,
     });
   }
@@ -364,26 +364,37 @@ export function Overworld() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 flex flex-col justify-end bg-ink-900/80"
+            className="absolute inset-0 z-50 flex flex-col justify-end bg-black/70 backdrop-blur-sm"
             onClick={() => { sfx.cancel?.(); setPendingConfig(null); }}
           >
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-              className="bg-ink-800 border-t-4 border-ink-600 rounded-t-2xl p-4 pb-8 max-h-[70vh] overflow-y-auto no-scrollbar"
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="bg-ink-900 border-t-2 border-ink-600 p-4 pb-8 max-h-[65vh] overflow-y-auto no-scrollbar"
               onClick={(e) => e.stopPropagation()}
             >
-              <PixelText size="sm" className="text-ink-300 block mb-4 text-center">Choose your creature</PixelText>
-              <div className="space-y-2">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-4">
+                <PixelText size="xs" className="text-ink-500">SELECT FIGHTER</PixelText>
+                <button
+                  onClick={() => { sfx.cancel?.(); setPendingConfig(null); }}
+                  className="text-ink-500 hover:text-ink-300 p-1"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Grid */}
+              <div className="grid grid-cols-2 gap-2">
                 {Object.entries(collection).map(([id, mon]) => {
                   const sp = getSpecies(id);
                   if (!sp) return null;
                   const maxHp = maxHpAtLevel(sp.baseHp, mon.level);
                   const fainted = mon.currentHp <= 0;
                   const hpPct = Math.max(0, (mon.currentHp / maxHp) * 100);
-                  const barColor = hpPct > 50 ? 'bg-forest-500' : hpPct > 20 ? 'bg-gold-500' : 'bg-rust-500';
+                  const barColor = hpPct > 50 ? 'bg-forest-500' : hpPct > 20 ? 'bg-gold-400' : 'bg-rust-500';
                   return (
                     <button
                       key={id}
@@ -393,27 +404,41 @@ export function Overworld() {
                         navigate('/battle', { state: { ...pendingConfig, startingCreatureId: id } });
                         setPendingConfig(null);
                       }}
-                      className={`w-full px-4 py-3 rounded-xl border-2 text-left transition-all ${
+                      className={`relative flex flex-col items-center p-3 border-2 transition-all active:scale-95 ${
                         fainted
-                          ? 'bg-ink-900 border-ink-700 opacity-40 cursor-not-allowed'
-                          : 'bg-ink-700 border-ink-500 hover:bg-ink-600 active:scale-95'
+                          ? 'bg-ink-800 border-ink-700 opacity-35 cursor-not-allowed'
+                          : 'bg-ink-800 border-ink-600 hover:border-forest-500 active:border-forest-400'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl leading-none">{sp.sprite}</span>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <PixelText size="xs" className="text-ink-100">{sp.name}</PixelText>
-                            <PixelText size="xs" className="text-ink-500">Lv.{mon.level}</PixelText>
-                          </div>
-                          <div className="h-1.5 bg-ink-900 rounded overflow-hidden">
-                            <div className={`h-full ${barColor} transition-all`} style={{ width: `${hpPct}%` }} />
-                          </div>
-                          <BodyText className="text-ink-500 text-xs mt-0.5">
-                            {fainted ? 'Fainted' : `${mon.currentHp}/${maxHp} HP`}
-                          </BodyText>
-                        </div>
+                      {/* Sprite */}
+                      <div className="w-14 h-14 flex items-center justify-center mb-2">
+                        {sp.spriteImage ? (
+                          <img
+                            src={sp.spriteImage}
+                            alt={sp.name}
+                            className={`w-full h-full object-contain ${fainted ? 'grayscale' : ''}`}
+                            draggable={false}
+                          />
+                        ) : (
+                          <span className="text-3xl">{sp.sprite}</span>
+                        )}
                       </div>
+
+                      {/* Name + level */}
+                      <PixelText size="xs" className="text-ink-100 truncate w-full text-center mb-0.5">
+                        {sp.name}
+                      </PixelText>
+                      <PixelText size="xs" className="text-ink-500 block mb-2">
+                        Lv.{mon.level}
+                      </PixelText>
+
+                      {/* HP bar */}
+                      <div className="w-full h-1.5 bg-ink-700 overflow-hidden">
+                        <div className={`h-full ${barColor}`} style={{ width: `${hpPct}%` }} />
+                      </div>
+                      <span className="font-body text-xs text-ink-500 mt-0.5">
+                        {fainted ? '✗ Fainted' : `${mon.currentHp}/${maxHp}`}
+                      </span>
                     </button>
                   );
                 })}

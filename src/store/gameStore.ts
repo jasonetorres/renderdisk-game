@@ -372,7 +372,7 @@ export function capturedCount(state: GameState): number {
   return Object.keys(state.collection).length;
 }
 
-export const GYM_WIN_THRESHOLD = 3; // player wins needed to unlock gym boss
+export const GYM_WIN_THRESHOLD = 5; // player wins needed to unlock gym boss
 
 export const GYM_IDS: GymId[] = ['roxy', 'danny', 'francesco', 'april'];
 

@@ -22,6 +22,9 @@ import { Battle } from '@/pages/Battle';
 import { FinalBossUnlock } from '@/pages/FinalBossUnlock';
 import { Credits } from '@/pages/Credits';
 import { PlayerLobby } from '@/pages/PlayerLobby';
+import { GuardianHub } from '@/pages/GuardianHub';
+import { CreatorCutscene } from '@/pages/CreatorCutscene';
+import { PvpBattle } from '@/pages/PvpBattle';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const trainer = useGameStore((s) => s.trainer);
@@ -83,6 +86,12 @@ export default function App() {
               path="/lobby"
               element={<ProtectedRoute><PlayerLobby /></ProtectedRoute>}
             />
+            {/* PvP — real-time trainer vs trainer */}
+            <Route path="/pvp" element={<ProtectedRoute><PvpBattle /></ProtectedRoute>} />
+            {/* Final boss cinematic — routes through before /battle */}
+            <Route path="/creator-cutscene" element={<ProtectedRoute><CreatorCutscene /></ProtectedRoute>} />
+            {/* Boss-only dashboard — not linked from game nav */}
+            <Route path="/guardian-hub" element={<GuardianHub />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>

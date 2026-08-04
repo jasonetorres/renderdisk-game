@@ -11,6 +11,7 @@ import type { BattleConfig } from '@/game/battle';
 import { PixelButton, PixelText, BodyText, PixelPanel, ElementTag, AnimatedSprite } from '@/components/ui';
 import { supabase } from '@/lib/supabase';
 import { resolveDiskCode } from '@/data/diskCodes';
+import { emitGameEvent } from '@/lib/gameEvents';
 
 type PageMode = 'entry' | 'success' | 'error';
 
@@ -81,7 +82,7 @@ export function QrScanner() {
       const config: BattleConfig = {
         type: 'guardian',
         enemySpeciesId: guardian.speciesId,
-        enemyLevel: 20 + gi * 5,
+        enemyLevel: [12, 15, 18, 21][gi] ?? 12,
         enemyName: guardian.trainerName,
         guardianIndex: gi,
       };
@@ -129,6 +130,8 @@ export function QrScanner() {
         .from('leaderboard_entries')
         .insert({ trainer_name: trainerName, disk_id: foundSpecies })
         .then(({ error }) => { if (error) console.warn('Leaderboard update failed:', error.message); });
+      const speciesName = getSpecies(foundSpecies)?.name ?? foundSpecies;
+      emitGameEvent('disk', trainerName, speciesName);
     }
     if (!starterDiskClaimed) {
       claimStarterDisk(foundSpecies);
@@ -173,11 +176,13 @@ export function QrScanner() {
         </PixelText>
       </div>
 
-      {/* Stats */}
-      <PixelPanel className="p-2 mb-4 flex items-center justify-between">
-        <PixelText size="xs" className="text-ink-200">Disks Found</PixelText>
-        <PixelText size="xs" className="text-forest-400">{captured}/20</PixelText>
-      </PixelPanel>
+      {/* Stats — only shown to existing trainers */}
+      {hasTrainer && (
+        <PixelPanel className="p-2 mb-4 flex items-center justify-between">
+          <PixelText size="xs" className="text-ink-200">Disks Found</PixelText>
+          <PixelText size="xs" className="text-forest-400">{captured}/20</PixelText>
+        </PixelPanel>
+      )}
 
       {/* Main entry form */}
       <motion.div
@@ -194,6 +199,11 @@ export function QrScanner() {
             Enter the number written on it.
           </BodyText>
 
+          {!hasTrainer && (
+            <BodyText className="text-ink-400 block mb-4 text-sm">
+              Enter the number written on your disk. Your creature is waiting inside.
+            </BodyText>
+          )}
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <input
               ref={inputRef}
@@ -211,41 +221,43 @@ export function QrScanner() {
               onClick={handleSubmit}
               disabled={!code.trim()}
             >
-              <Disc size={16} /> Claim Disk
+              <Disc size={16} /> {hasTrainer ? 'Claim Disk' : 'Reveal My Creature'}
             </PixelButton>
           </form>
         </PixelPanel>
 
-        {/* Demo mode */}
-        <div className="mt-2">
-          <PixelText size="xs" className="text-ink-500 mb-2 block text-center">
-            Demo — Tap any disk to preview
-          </PixelText>
-          <div className="grid grid-cols-5 gap-1.5">
-            {NORMAL_SPECIES.map((sp) => {
-              const isCaptured = !!collection[sp.id];
-              return (
-                <button
-                  key={sp.id}
-                  onClick={() => handleDemoCapture(sp.id)}
-                  disabled={isCaptured}
-                  className={`aspect-square flex flex-col items-center justify-center border-2 p-1 ${
-                    isCaptured
-                      ? 'bg-forest-900 border-forest-700 opacity-50'
-                      : 'bg-ink-700 border-ink-500 hover:border-forest-400'
-                  }`}
-                >
-                  {isCaptured && sp.spriteImage ? (
-                    <img src={sp.spriteImage} alt={sp.name} className="w-full h-full object-contain" draggable={false} />
-                  ) : (
-                    <span className="text-lg font-pixel text-ink-500">?</span>
-                  )}
-                  <span className="pixel-text-xs text-ink-400">{sp.diskId}</span>
-                </button>
-              );
-            })}
+        {/* Demo mode — hidden for new players, they must enter their real code */}
+        {hasTrainer && (
+          <div className="mt-2">
+            <PixelText size="xs" className="text-ink-500 mb-2 block text-center">
+              Demo — Tap any disk to preview
+            </PixelText>
+            <div className="grid grid-cols-5 gap-1.5">
+              {NORMAL_SPECIES.map((sp) => {
+                const isCaptured = !!collection[sp.id];
+                return (
+                  <button
+                    key={sp.id}
+                    onClick={() => handleDemoCapture(sp.id)}
+                    disabled={isCaptured}
+                    className={`aspect-square flex flex-col items-center justify-center border-2 p-1 ${
+                      isCaptured
+                        ? 'bg-forest-900 border-forest-700 opacity-50'
+                        : 'bg-ink-700 border-ink-500 hover:border-forest-400'
+                    }`}
+                  >
+                    {isCaptured && sp.spriteImage ? (
+                      <img src={sp.spriteImage} alt={sp.name} className="w-full h-full object-contain" draggable={false} />
+                    ) : (
+                      <span className="text-lg font-pixel text-ink-500">?</span>
+                    )}
+                    <span className="pixel-text-xs text-ink-400">{sp.diskId}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </motion.div>
 
       {/* Success modal */}
@@ -255,6 +267,7 @@ export function QrScanner() {
             speciesId={foundSpecies}
             onConfirm={handleConfirmCapture}
             onCancel={resetToEntry}
+            isNewPlayer={!hasTrainer}
           />
         )}
       </AnimatePresence>
@@ -287,10 +300,12 @@ function SuccessModal({
   speciesId,
   onConfirm,
   onCancel,
+  isNewPlayer = false,
 }: {
   speciesId: string;
   onConfirm: () => void;
   onCancel: () => void;
+  isNewPlayer?: boolean;
 }) {
   const species = getSpecies(speciesId);
   if (!species) return null;
@@ -338,11 +353,13 @@ function SuccessModal({
             <BodyText className="text-ink-300 block mb-4 mt-2">{species.description}</BodyText>
             <div className="flex gap-2">
               <PixelButton variant="primary" fullWidth onClick={onConfirm}>
-                <Disc size={14} /> Capture
+                <Disc size={14} /> {isNewPlayer ? 'Claim & Create Trainer →' : 'Capture'}
               </PixelButton>
-              <PixelButton onClick={onCancel}>
-                <X size={14} />
-              </PixelButton>
+              {!isNewPlayer && (
+                <PixelButton onClick={onCancel}>
+                  <X size={14} />
+                </PixelButton>
+              )}
             </div>
           </div>
         </PixelPanel>

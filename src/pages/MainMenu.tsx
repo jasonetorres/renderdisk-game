@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Settings, Info, BookOpen, Disc, Map as MapIcon, Star, GraduationCap, Home } from 'lucide-react';
@@ -6,6 +6,9 @@ import { useGameStore, capturedCount } from '@/store/gameStore';
 import { audio, useSfx } from '@/audio/engine';
 import { PixelButton, PixelText, BodyText, PixelPanel, AnimatedSprite } from '@/components/ui';
 import { TrainerSprite } from '@/components/trainer/TrainerSprite';
+import { supabase } from '@/lib/supabase';
+import { formatGameEvent, timeAgo } from '@/lib/gameEvents';
+import type { GameEvent } from '@/lib/gameEvents';
 
 export function MainMenu() {
   const navigate = useNavigate();
@@ -17,6 +20,8 @@ export function MainMenu() {
   const tutorialComplete = useGameStore((s) => s.tutorialComplete);
   const [booting, setBooting] = useState(true);
   const [bootLine, setBootLine] = useState(0);
+  const [feed, setFeed] = useState<GameEvent[]>([]);
+  const feedRef = useRef<GameEvent[]>([]);
 
   const bootLines = [
     'RENDERDISK BIOS v1.98',
@@ -43,6 +48,39 @@ export function MainMenu() {
     }
     return () => {};
   }, [booting, audioEnabled]);
+
+  useEffect(() => {
+    // Fetch recent events
+    supabase
+      .from('game_events')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then(({ data }) => {
+        if (data) {
+          const events = data.reverse() as GameEvent[];
+          feedRef.current = events;
+          setFeed(events);
+        }
+      });
+
+    // Subscribe to new events
+    const channel = supabase
+      .channel('game-events-feed')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'game_events' },
+        (payload) => {
+          const newEvent = payload.new as GameEvent;
+          const updated = [...feedRef.current, newEvent].slice(-20);
+          feedRef.current = updated;
+          setFeed([...updated]);
+        },
+      )
+      .subscribe();
+
+    return () => { channel.unsubscribe(); };
+  }, []);
 
   const handleBoot = () => {
     sfx.confirm();
@@ -157,27 +195,18 @@ export function MainMenu() {
             <PixelPanel variant="raised" className="p-5 text-center">
               <AnimatedSprite glyph="💾" size="md" />
               <PixelText size="sm" className="text-forest-300 block mt-3 mb-2">
-                The Hunt
+                Welcome to RenderDisk
               </PixelText>
               <BodyText className="text-ink-300 block mb-1">
-                20 disks at RenderATL. Each one has a creature inside. Scan them all to complete the set.
-              </BodyText>
-              <BodyText className="text-ink-400 block mt-3 text-base">
-                Find Jason, get a disk, then enter the number written on it to begin.
+                You've got a disk. Enter the number on it to claim your creature — then you'll create your trainer.
               </BodyText>
             </PixelPanel>
             <PixelButton
               variant="primary"
               fullWidth
-              onClick={() => navigate('/trainer/new')}
-            >
-              <GraduationCap size={16} /> Create Your Trainer
-            </PixelButton>
-            <PixelButton
-              fullWidth
               onClick={() => navigate('/scan')}
             >
-              <Disc size={16} /> Enter a Disk Code
+              <Disc size={16} /> Enter Your Disk Code
             </PixelButton>
           </div>
         ) : !tutorialComplete ? (
@@ -199,12 +228,6 @@ export function MainMenu() {
             </PixelButton>
             <PixelButton
               fullWidth
-              onClick={() => navigate('/scan')}
-            >
-              <Disc size={16} /> Enter Disk
-            </PixelButton>
-            <PixelButton
-              fullWidth
               onClick={() => navigate('/binder')}
             >
               <BookOpen size={16} /> Binder
@@ -216,6 +239,36 @@ export function MainMenu() {
             >
               <Star size={16} /> Guardians
             </PixelButton>
+
+            {/* Live Activity Feed */}
+            <div className="mt-1">
+              <PixelText size="xs" className="text-ink-500 block mb-2">
+                📡 LIVE FEED
+              </PixelText>
+              <div className="space-y-1.5 max-h-48 overflow-y-auto">
+                {feed.length === 0 ? (
+                  <BodyText className="text-ink-600 block text-center py-3 text-sm">
+                    No activity yet...
+                  </BodyText>
+                ) : (
+                  [...feed].reverse().map((e) => {
+                    const { icon, text } = formatGameEvent(e);
+                    return (
+                      <motion.div
+                        key={e.id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="flex items-center gap-2 bg-ink-800/60 border border-ink-700 px-2 py-1.5"
+                      >
+                        <span className="text-sm shrink-0">{icon}</span>
+                        <span className="font-body text-xs text-ink-200 flex-1 truncate">{text}</span>
+                        <span className="font-body text-xs text-ink-500 shrink-0">{timeAgo(e.created_at)}</span>
+                      </motion.div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
           </>
         )}
 
@@ -237,7 +290,7 @@ export function MainMenu() {
         <PixelButton
           variant="gold"
           fullWidth
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/home')}
           className="mt-3"
         >
           <Home size={16} /> Thank You Page

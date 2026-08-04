@@ -26,3 +26,10 @@ export interface LeaderboardRow {
   unique_disks: number;
   latest_scan: string;
 }
+
+export interface BossChatMessage {
+  id: string;
+  boss_name: string;
+  message: string;
+  created_at: string;
+}

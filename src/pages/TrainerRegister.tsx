@@ -4,6 +4,7 @@ import { Play } from 'lucide-react';
 import { PixelButton, PixelPanel, PixelText } from '@/components/ui';
 import { useSfx } from '@/audio/engine';
 import { useGameStore } from '@/store/gameStore';
+import { emitGameEvent } from '@/lib/gameEvents';
 import type { BodyId, TrainerAppearance, TrainerLayerOption } from '@/data/trainer2/types';
 import { makeDefaultAppearance, DEFAULTS_BY_BODY } from '@/data/trainer2/defaults';
 import {
@@ -201,6 +202,7 @@ export function TrainerRegister() {
     sfx.confirm();
     createTrainer({ name: nameTrim, appearance, version: 2, createdAt: Date.now() });
     if (pendingDiskCode) { claimStarterDisk(pendingDiskCode); setPendingDiskCode(null); }
+    emitGameEvent('join', nameTrim);
     navigate('/tutorial');
   }
 

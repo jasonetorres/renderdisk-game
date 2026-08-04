@@ -1,5 +1,6 @@
 import type { Ability, MonsterSpecies } from '@/types/game';
 import type { GymId } from '@/types/game';
+import type { TrainerAppearance } from '@/data/trainer2/types';
 
 // ─── Ability library ─────────────────────────────────────────────────────────
 
@@ -105,7 +106,92 @@ export interface Guardian {
   theme: GuardianTheme;
   passive: string;
   cardImage: string;
+  /** Pre-made pixel art sprite PNG for this boss. */
+  spriteUrl: string;
+  /** Pixel trainer sprite appearance for this guardian. */
+  appearance: TrainerAppearance;
+  /** Secret code bosses use to access the Guardian Hub. */
+  accessCode: string;
 }
+
+// ─── Guardian trainer appearances ────────────────────────────────────────────
+// Mapped to real people's looks from the RenderATL image.
+
+const ROXY_APPEARANCE: TrainerAppearance = {
+  body: 'average',
+  top: 'top-av-blouse',
+  bottom: 'bottom-av-joggers',
+  shoes: 'shoes-av-sneakers',
+  head: 'head-oval',
+  eyes: 'eyes-lashes',
+  faceAcc: null,
+  hair: 'hair-raven',
+  headwear: null,
+  hairFront: 'hair-front-raven',
+  skinTone: 'skin-4',
+  hairColor: '#3d1f0e',
+  topColor: '#282828',
+  bottomColor: '#505030',
+  bottomColor2: '#363630',
+  version: 2,
+};
+
+const DANNY_APPEARANCE: TrainerAppearance = {
+  body: 'average',
+  top: 'top-av-tee',
+  bottom: 'bottom-av-slacks',
+  shoes: 'shoes-av-sneakers',
+  head: 'head-square',
+  eyes: 'eyes-hooded',
+  faceAcc: 'face-acc-beard',
+  hair: 'hair-crew-cut',
+  headwear: null,
+  hairFront: 'hair-front-crew-cut',
+  skinTone: 'skin-6',
+  hairColor: '#1a0e06',
+  topColor: '#686868',
+  bottomColor: '#a89060',
+  bottomColor2: '#8a7240',
+  version: 2,
+};
+
+const APRIL_APPEARANCE: TrainerAppearance = {
+  body: 'average',
+  top: 'top-av-jacket',
+  bottom: 'bottom-av-slacks',
+  shoes: 'shoes-av-sneakers',
+  head: 'head-oval',
+  eyes: 'eyes-determined',
+  faceAcc: null,
+  hair: 'hair-afro',
+  headwear: null,
+  hairFront: 'hair-front-afro',
+  skinTone: 'skin-7',
+  hairColor: '#1a0e06',
+  topColor: '#d8d8d8',
+  bottomColor: '#1e1e1e',
+  bottomColor2: '#282828',
+  version: 2,
+};
+
+const FRANCESCO_APPEARANCE: TrainerAppearance = {
+  body: 'average',
+  top: 'top-av-tee',
+  bottom: 'bottom-av-jeans',
+  shoes: 'shoes-av-sneakers',
+  head: 'head-round',
+  eyes: 'eyes-soft',
+  faceAcc: null,
+  hair: 'hair-cowlick',
+  headwear: null,
+  hairFront: 'hair-front-cowlick',
+  skinTone: 'skin-2',
+  hairColor: '#1a0e06',
+  topColor: '#d8d8d8',
+  bottomColor: '#163068',
+  bottomColor2: '#102060',
+  version: 2,
+};
 
 export const GUARDIANS: Guardian[] = [
   {
@@ -116,6 +202,9 @@ export const GUARDIANS: Guardian[] = [
     theme: 'violet',
     passive: 'Signature move always goes first once per battle.',
     cardImage: '/assets/images/minibosses/roxy_card.png',
+    spriteUrl: '/assets/images/boss-sprites/roxy.png',
+    appearance: ROXY_APPEARANCE,
+    accessCode: 'ROXY-08',
   },
   {
     speciesId: 'RD-14B',
@@ -125,6 +214,9 @@ export const GUARDIANS: Guardian[] = [
     theme: 'orange',
     passive: 'Heals 25% HP when dropping below 40%.',
     cardImage: '/assets/images/minibosses/danny_thompson_card.png',
+    spriteUrl: '/assets/images/boss-sprites/danny.png',
+    appearance: DANNY_APPEARANCE,
+    accessCode: 'DANNY-09',
   },
   {
     speciesId: 'RD-17B',
@@ -134,6 +226,9 @@ export const GUARDIANS: Guardian[] = [
     theme: 'blue',
     passive: 'Potion effectiveness is halved.',
     cardImage: '/assets/images/minibosses/francesco_ciulla_card.png',
+    spriteUrl: '/assets/images/boss-sprites/francesco.png',
+    appearance: FRANCESCO_APPEARANCE,
+    accessCode: 'FRAN-14',
   },
   {
     speciesId: 'RD-09B',
@@ -143,8 +238,30 @@ export const GUARDIANS: Guardian[] = [
     theme: 'purple',
     passive: 'First hit received each battle is blocked.',
     cardImage: '/assets/images/minibosses/april_gittens_card.png',
+    spriteUrl: '/assets/images/boss-sprites/april.png',
+    appearance: APRIL_APPEARANCE,
+    accessCode: 'APRIL-17',
   },
 ];
+
+const JASON_APPEARANCE: TrainerAppearance = {
+  body: 'average',
+  top: 'top-av-tee',
+  bottom: 'bottom-av-jeans',
+  shoes: 'shoes-av-sneakers',
+  head: 'head-oval',
+  eyes: 'eyes-soft',
+  faceAcc: 'face-acc-beard',
+  hair: 'hair-outta-my-face',
+  headwear: 'headwear-fitted-back',
+  hairFront: 'hair-front-outta-my-face',
+  skinTone: 'skin-4',
+  hairColor: '#1a0e06',
+  topColor: '#1848c0',
+  bottomColor: '#1e1e1e',
+  bottomColor2: '#102060',
+  version: 2,
+};
 
 export const CREATOR = {
   name: 'Jason Torres',
@@ -152,6 +269,9 @@ export const CREATOR = {
   diskId: 'RD-23',
   speciesId: 'RD-23',
   cardImage: '/assets/images/finalboss/jason_torres_finalboss_card.png',
+  spriteUrl: '/assets/images/boss-sprites/jason.png',
+  appearance: JASON_APPEARANCE,
+  accessCode: 'BOSS-23',
 };
 
 export interface GymDef {

@@ -98,7 +98,7 @@ export function DiskEntry() {
       return;
     }
 
-    // Creator battle
+    // Creator battle — route through cinematic cutscene first
     if (species.rarity === 'Legendary') {
       const config: BattleConfig = {
         type: 'creator',
@@ -106,7 +106,7 @@ export function DiskEntry() {
         enemyLevel: 50,
         enemyName: CREATOR.name,
       };
-      navigate('/battle', { state: config });
+      navigate('/creator-cutscene', { state: config });
       return;
     }
 

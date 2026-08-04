@@ -15,7 +15,7 @@ export function About() {
         <button
           onClick={() => {
             sfx.cancel();
-            navigate('/');
+            navigate('/game');
           }}
           className="pixel-btn !p-2"
           aria-label="Back"
