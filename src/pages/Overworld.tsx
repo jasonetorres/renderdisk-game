@@ -46,7 +46,7 @@ export function Overworld() {
   function checkHasHealthyCreature(): boolean {
     const ids = Object.keys(collection);
     if (ids.length === 0) {
-      flash('You need a Disk monster to battle! Scan a floppy disk QR code first.');
+      flash('You need a Disk monster to battle! Enter a disk number first.');
       return false;
     }
     const hasHealthy = ids.some(id => (collection[id]?.currentHp ?? 0) > 0);

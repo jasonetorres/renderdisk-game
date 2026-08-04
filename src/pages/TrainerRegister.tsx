@@ -39,13 +39,28 @@ function firstOption(category: string, body: BodyId, gender: Gender): string {
   return compatibleOptions(category, body, gender)[0]?.id ?? '';
 }
 
+/**
+ * For femme gender, prefer femme-tagged options first so the
+ * default appearance is visually distinct (blouse, skirt, high-ponytail).
+ * Falls back to the first any-compatible option if no femme tag exists.
+ */
+function preferredOption(category: string, body: BodyId, gender: Gender): string {
+  const all = compatibleOptions(category, body, gender);
+  if (gender === 'femme') {
+    const femmeFirst = all.find((o) => o.tags?.includes('femme'));
+    if (femmeFirst) return femmeFirst.id;
+  }
+  return all[0]?.id ?? '';
+}
+
 function resetForGender(body: BodyId, gender: Gender): Partial<TrainerAppearance> {
   const defaults = DEFAULTS_BY_BODY[body];
   return {
-    top: firstOption('top', body, gender) || defaults.top,
-    bottom: firstOption('bottom', body, gender) || defaults.bottom,
+    top: preferredOption('top', body, gender) || defaults.top,
+    bottom: preferredOption('bottom', body, gender) || defaults.bottom,
     shoes: firstOption('shoes', body, gender) || defaults.shoes,
-    hair: firstOption('hair', body, gender) || defaults.hair,
+    hair: preferredOption('hair', body, gender) || defaults.hair,
+    eyes: gender === 'femme' ? 'eyes-feminine' : defaults.eyes,
     faceAcc: gender === 'femme' ? null : defaults.faceAcc,
   };
 }

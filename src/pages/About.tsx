@@ -59,7 +59,7 @@ export function About() {
             Years later, the disks surfaced again — carried by Jason Torres himself. You find him, he hands you one, and whispers, "Take care of this one."
           </BodyText>
           <BodyText className="text-ink-200 block">
-            Each disk bears a QR code. Scanning it doesn't download software — it awakens a creature. Every captured Diskling is recorded in your personal Binder, slowly rebuilding the forgotten world of RenderDisk.
+            Each disk has a number on it. Enter it here and a creature awakens. Every captured Diskling is recorded in your personal Binder, slowly rebuilding the forgotten world of RenderDisk.
           </BodyText>
         </PixelPanel>
 
@@ -78,11 +78,11 @@ export function About() {
             </div>
             <div className="flex gap-2">
               <span className="font-pixel text-[10px] text-gold-400 shrink-0 pt-1">02</span>
-              <BodyText className="text-ink-200">Scan its QR code to awaken the creature inside and enter the game.</BodyText>
+              <BodyText className="text-ink-200">Enter the number written on it to awaken the creature inside and start the game.</BodyText>
             </div>
             <div className="flex gap-2">
               <span className="font-pixel text-[10px] text-gold-400 shrink-0 pt-1">03</span>
-              <BodyText className="text-ink-200">Find and scan more disks to collect every Diskling into your Binder.</BodyText>
+              <BodyText className="text-ink-200">Find more disks, enter their numbers, and collect every Diskling into your Binder.</BodyText>
             </div>
             <div className="flex gap-2">
               <span className="font-pixel text-[10px] text-gold-400 shrink-0 pt-1">04</span>

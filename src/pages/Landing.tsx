@@ -150,7 +150,7 @@ export function Landing() {
           </div>
           <p className="font-body text-xl text-ink-300 leading-snug mb-4">
             20 disks at RenderATL. Each one has a creature inside.
-            Scan them all to complete the set.
+            Find them all to complete the set.
           </p>
           <button
             onClick={() => navigate('/game')}

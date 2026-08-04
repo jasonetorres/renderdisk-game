@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Settings, Info, BookOpen, ScanLine, Map as MapIcon, Star, GraduationCap, Home } from 'lucide-react';
+import { Settings, Info, BookOpen, Disc, Map as MapIcon, Star, GraduationCap, Home } from 'lucide-react';
 import { useGameStore, capturedCount } from '@/store/gameStore';
 import { audio, useSfx } from '@/audio/engine';
 import { PixelButton, PixelText, BodyText, PixelPanel, AnimatedSprite } from '@/components/ui';
@@ -163,7 +163,7 @@ export function MainMenu() {
                 20 disks at RenderATL. Each one has a creature inside. Scan them all to complete the set.
               </BodyText>
               <BodyText className="text-ink-400 block mt-3 text-base">
-                Find Jason, get a disk, then scan the QR code on the back with your phone camera to begin.
+                Find Jason, get a disk, then enter the number written on it to begin.
               </BodyText>
             </PixelPanel>
             <PixelButton
@@ -177,7 +177,7 @@ export function MainMenu() {
               fullWidth
               onClick={() => navigate('/scan')}
             >
-              <ScanLine size={16} /> Enter a Disk Code Manually
+              <Disc size={16} /> Enter a Disk Code
             </PixelButton>
           </div>
         ) : !tutorialComplete ? (
@@ -201,7 +201,7 @@ export function MainMenu() {
               fullWidth
               onClick={() => navigate('/scan')}
             >
-              <ScanLine size={16} /> Scan Disk
+              <Disc size={16} /> Enter Disk
             </PixelButton>
             <PixelButton
               fullWidth

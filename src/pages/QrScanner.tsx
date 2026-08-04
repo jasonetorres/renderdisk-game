@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Camera, ScanLine, Disc, X } from 'lucide-react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { ArrowLeft, Disc, X } from 'lucide-react';
 import { useGameStore, capturedCount, BOSS_UNLOCK_THRESHOLDS } from '@/store/gameStore';
 import { useSfx } from '@/audio/engine';
 import { audio } from '@/audio/engine';
@@ -11,14 +10,15 @@ import { isGuardianUnlocked, isCreatorUnlocked } from '@/store/gameStore';
 import type { BattleConfig } from '@/game/battle';
 import { PixelButton, PixelText, BodyText, PixelPanel, ElementTag, AnimatedSprite } from '@/components/ui';
 import { supabase } from '@/lib/supabase';
+import { resolveDiskCode } from '@/data/diskCodes';
 
-type ScanMode = 'idle' | 'scanning' | 'success' | 'error' | 'manual';
+type PageMode = 'entry' | 'success' | 'error';
 
 export function QrScanner() {
   const navigate = useNavigate();
   const sfx = useSfx();
-  const scannerRef = useRef<Html5Qrcode | null>(null);
-  const containerId = 'qr-reader';
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const captureMonster = useGameStore((s) => s.captureMonster);
   const collection = useGameStore((s) => s.collection);
   const captured = useGameStore((s) => capturedCount(s));
@@ -27,59 +27,35 @@ export function QrScanner() {
   const hasTrainer = useGameStore((s) => !!s.trainer);
   const battlesWon = useGameStore((s) => s.battlesWon);
   const bossesDefeated = useGameStore((s) => s.bossesDefeated);
-  const [mode, setMode] = useState<ScanMode>('idle');
-  const [scannedSpecies, setScannedSpecies] = useState<string | null>(null);
+
+  const [code, setCode] = useState('');
+  const [mode, setMode] = useState<PageMode>('entry');
+  const [foundSpecies, setFoundSpecies] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     audio.playMusic('menu');
-    return () => {
-      stopScanner();
-    };
+    inputRef.current?.focus();
   }, []);
 
-  const stopScanner = async () => {
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.stop();
-        await scannerRef.current.clear();
-      } catch {
-        // already stopped
-      }
-      scannerRef.current = null;
-    }
-  };
-
-  const handleScanResult = (decodedText: string) => {
-    stopScanner();
-    sfx.capture();
-    processScan(decodedText);
-  };
-
-  const processScan = (code: string) => {
-    // Normalize: accept "RD-01", "RD-03", etc.
-    const normalized = code.trim().toUpperCase();
-    const match = normalized.match(/RD-?\d+/);
-    if (!match) {
-      setError('Invalid disk code. Expected format: RD-01 through RD-20.');
+  const processDiskCode = (raw: string) => {
+    const padded = resolveDiskCode(raw);
+    if (!padded) {
+      setError(`"${raw.trim()}" isn't a valid disk number. Enter a number from 1 to 20.`);
       setMode('error');
       sfx.error();
       return;
     }
-
-    const diskId = match[0];
-    // Pad single digits: RD-1 -> RD-01
-    const padded = diskId.replace(/RD-?(\d+)/, (_, n) => `RD-${n.padStart(2, '0')}`);
 
     const species = getSpecies(padded);
     if (!species) {
-      setError(`Unknown disk code: ${padded}.`);
+      setError(`Unknown disk: ${padded}.`);
       setMode('error');
       sfx.error();
       return;
     }
 
-    // Boss disk — trigger guardian battle if unlocked
+    // Boss disk
     if (species.rarity === 'Boss') {
       const guardian = GUARDIANS.find((g) => g.speciesId === padded);
       if (!guardian) {
@@ -113,7 +89,7 @@ export function QrScanner() {
       return;
     }
 
-    // Creator disk — trigger final battle if unlocked
+    // Creator disk
     if (species.rarity === 'Legendary') {
       if (!isCreatorUnlocked(useGameStore.getState())) {
         setError('The Creator is sealed. Capture all 20 disks and defeat all 4 Guardians first.');
@@ -132,65 +108,53 @@ export function QrScanner() {
       return;
     }
 
-    setScannedSpecies(padded);
+    sfx.capture();
+    setFoundSpecies(padded);
     setMode('success');
   };
 
-  const startCameraScan = async () => {
-    sfx.select();
-    setMode('scanning');
-    setError(null);
-
-    try {
-      const html5Qrcode = new Html5Qrcode(containerId);
-      scannerRef.current = html5Qrcode;
-
-      await html5Qrcode.start(
-        { facingMode: 'environment' },
-        { fps: 10, qrbox: 250 },
-        (decodedText) => handleScanResult(decodedText),
-        () => {},
-      );
-    } catch {
-      setError('Camera access denied or unavailable. Use Demo Mode to try the scanner.');
-      setMode('error');
-      sfx.error();
-    }
-  };
-
-  const handleDemoCapture = (speciesId: string) => {
-    sfx.floppy();
-    setScannedSpecies(speciesId);
-    setMode('success');
+  const handleSubmit = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!code.trim()) return;
+    processDiskCode(code.trim());
   };
 
   const handleConfirmCapture = () => {
-    if (!scannedSpecies) return;
+    if (!foundSpecies) return;
     sfx.confirm();
-    captureMonster(scannedSpecies);
-    // Record on the global leaderboard
+    captureMonster(foundSpecies);
     const trainerName = useGameStore.getState().trainer?.name;
     if (trainerName) {
       supabase
         .from('leaderboard_entries')
-        .insert({ trainer_name: trainerName, disk_id: scannedSpecies })
-        .then(({ error }) => {
-          if (error) console.warn('Leaderboard update failed:', error.message);
-        });
+        .insert({ trainer_name: trainerName, disk_id: foundSpecies })
+        .then(({ error }) => { if (error) console.warn('Leaderboard update failed:', error.message); });
     }
     if (!starterDiskClaimed) {
-      claimStarterDisk(scannedSpecies);
-      setMode('idle');
-      setScannedSpecies(null);
+      claimStarterDisk(foundSpecies);
+      setMode('entry');
+      setFoundSpecies(null);
+      setCode('');
       navigate(hasTrainer ? '/world' : '/trainer/new');
       return;
     }
-    setMode('idle');
-    setScannedSpecies(null);
+    setMode('entry');
+    setFoundSpecies(null);
+    setCode('');
   };
 
-  const handleManualEntry = (code: string) => {
-    processScan(code);
+  const handleDemoCapture = (speciesId: string) => {
+    sfx.floppy();
+    setFoundSpecies(speciesId);
+    setMode('success');
+  };
+
+  const resetToEntry = () => {
+    sfx.cancel();
+    setMode('entry');
+    setError(null);
+    setCode('');
+    setTimeout(() => inputRef.current?.focus(), 100);
   };
 
   return (
@@ -205,118 +169,92 @@ export function QrScanner() {
           <ArrowLeft size={16} />
         </button>
         <PixelText size="md" className="text-forest-400">
-          Scan Disk
+          Enter Disk
         </PixelText>
       </div>
 
       {/* Stats */}
       <PixelPanel className="p-2 mb-4 flex items-center justify-between">
-        <PixelText size="xs" className="text-ink-200">
-          Disks Captured
-        </PixelText>
-        <PixelText size="xs" className="text-forest-400">
-          {captured}/20
-        </PixelText>
+        <PixelText size="xs" className="text-ink-200">Disks Found</PixelText>
+        <PixelText size="xs" className="text-forest-400">{captured}/20</PixelText>
       </PixelPanel>
 
-      {/* Idle mode */}
-      {mode === 'idle' && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex-1 flex flex-col"
-        >
-          <PixelPanel variant="raised" className="p-6 text-center mb-4">
-            <AnimatedSprite glyph="💾" size="lg" />
-            <PixelText size="sm" className="text-forest-300 block mt-4 mb-2">
-              Scan a Floppy Disk
-            </PixelText>
-            <BodyText className="text-ink-300 block mb-4">
-              Point your camera at a RenderDisk QR code to capture the creature inside.
-            </BodyText>
-          </PixelPanel>
+      {/* Main entry form */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex-1 flex flex-col"
+      >
+        <PixelPanel variant="raised" className="p-6 text-center mb-5">
+          <AnimatedSprite glyph="💾" size="lg" />
+          <PixelText size="sm" className="text-forest-300 block mt-4 mb-1">
+            Got a disk?
+          </PixelText>
+          <BodyText className="text-ink-300 block mb-5">
+            Enter the number written on it.
+          </BodyText>
 
-          <PixelButton variant="primary" fullWidth onClick={startCameraScan} className="mb-3">
-            <Camera size={16} /> Start Camera
-          </PixelButton>
-          <PixelButton fullWidth onClick={() => setMode('manual')} className="mb-3">
-            <ScanLine size={16} /> Enter Code Manually
-          </PixelButton>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            <input
+              ref={inputRef}
+              type="text"
+              inputMode="numeric"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="1 – 20"
+              maxLength={8}
+              className="w-full bg-ink-900 border-2 border-ink-600 px-4 py-4 font-pixel text-2xl text-center text-ink-100 placeholder:text-ink-600 focus:outline-none focus:border-forest-500 tracking-widest"
+            />
+            <PixelButton
+              variant="primary"
+              fullWidth
+              onClick={handleSubmit}
+              disabled={!code.trim()}
+            >
+              <Disc size={16} /> Claim Disk
+            </PixelButton>
+          </form>
+        </PixelPanel>
 
-          {/* Demo mode — lets testers capture any disk */}
-          <div className="mt-4">
-            <PixelText size="xs" className="text-ink-400 mb-2 block text-center">
-              Demo Mode — Capture Any Disk
-            </PixelText>
-            <div className="grid grid-cols-5 gap-1.5">
-              {NORMAL_SPECIES.map((sp) => {
-                const isCaptured = !!collection[sp.id];
-                return (
-                  <button
-                    key={sp.id}
-                    onClick={() => handleDemoCapture(sp.id)}
-                    disabled={isCaptured}
-                    className={`aspect-square flex flex-col items-center justify-center border-2 p-1 ${
-                      isCaptured
-                        ? 'bg-forest-900 border-forest-700 opacity-50'
-                        : 'bg-ink-700 border-ink-500 hover:border-forest-400'
-                    }`}
-                  >
-                    {isCaptured && sp.spriteImage ? (
-                      <img src={sp.spriteImage} alt={sp.name} className="w-full h-full object-contain" draggable={false} />
-                    ) : (
-                      <span className="text-lg font-pixel text-ink-500">?</span>
-                    )}
-                    <span className="pixel-text-xs text-ink-400">{sp.diskId}</span>
-                  </button>
-                );
-              })}
-            </div>
+        {/* Demo mode */}
+        <div className="mt-2">
+          <PixelText size="xs" className="text-ink-500 mb-2 block text-center">
+            Demo — Tap any disk to preview
+          </PixelText>
+          <div className="grid grid-cols-5 gap-1.5">
+            {NORMAL_SPECIES.map((sp) => {
+              const isCaptured = !!collection[sp.id];
+              return (
+                <button
+                  key={sp.id}
+                  onClick={() => handleDemoCapture(sp.id)}
+                  disabled={isCaptured}
+                  className={`aspect-square flex flex-col items-center justify-center border-2 p-1 ${
+                    isCaptured
+                      ? 'bg-forest-900 border-forest-700 opacity-50'
+                      : 'bg-ink-700 border-ink-500 hover:border-forest-400'
+                  }`}
+                >
+                  {isCaptured && sp.spriteImage ? (
+                    <img src={sp.spriteImage} alt={sp.name} className="w-full h-full object-contain" draggable={false} />
+                  ) : (
+                    <span className="text-lg font-pixel text-ink-500">?</span>
+                  )}
+                  <span className="pixel-text-xs text-ink-400">{sp.diskId}</span>
+                </button>
+              );
+            })}
           </div>
-        </motion.div>
-      )}
-
-      {/* Scanning mode */}
-      {mode === 'scanning' && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="flex-1 flex flex-col"
-        >
-          <div id={containerId} className="w-full aspect-square bg-ink-900 border-4 border-forest-600 mb-4 overflow-hidden" />
-          <PixelButton
-            variant="ember"
-            fullWidth
-            onClick={async () => {
-              await stopScanner();
-              sfx.cancel();
-              setMode('idle');
-            }}
-          >
-            <X size={16} /> Cancel Scan
-          </PixelButton>
-        </motion.div>
-      )}
-
-      {/* Manual entry mode */}
-      {mode === 'manual' && (
-        <ManualEntry
-          onSubmit={handleManualEntry}
-          onCancel={() => { sfx.cancel(); setMode('idle'); }}
-        />
-      )}
+        </div>
+      </motion.div>
 
       {/* Success modal */}
       <AnimatePresence>
-        {mode === 'success' && scannedSpecies && (
+        {mode === 'success' && foundSpecies && (
           <SuccessModal
-            speciesId={scannedSpecies}
+            speciesId={foundSpecies}
             onConfirm={handleConfirmCapture}
-            onCancel={() => {
-              sfx.cancel();
-              setMode('idle');
-              setScannedSpecies(null);
-            }}
+            onCancel={resetToEntry}
           />
         )}
       </AnimatePresence>
@@ -329,71 +267,19 @@ export function QrScanner() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-            onClick={() => { sfx.cancel(); setMode('idle'); setError(null); }}
+            onClick={resetToEntry}
           >
-            <PixelPanel variant="raised" className="p-6 text-center max-w-xs">
-              <span onClick={(e) => e.stopPropagation()}>
-              <PixelText size="md" className="text-rust-400 block mb-3">
-                Scan Failed
-              </PixelText>
-              <BodyText className="text-ink-200 block mb-4">
-                {error}
-              </BodyText>
-              <PixelButton variant="primary" fullWidth onClick={() => { sfx.cancel(); setMode('idle'); setError(null); }}>
+            <PixelPanel variant="raised" className="p-6 text-center max-w-xs" onClick={(e) => e.stopPropagation()}>
+              <PixelText size="md" className="text-rust-400 block mb-3">Not Found</PixelText>
+              <BodyText className="text-ink-200 block mb-4">{error}</BodyText>
+              <PixelButton variant="primary" fullWidth onClick={resetToEntry}>
                 Try Again
               </PixelButton>
-              </span>
             </PixelPanel>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-function ManualEntry({
-  onSubmit,
-  onCancel,
-}: {
-  onSubmit: (code: string) => void;
-  onCancel: () => void;
-}) {
-  const [code, setCode] = useState('');
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex-1 flex flex-col"
-    >
-      <PixelPanel className="p-4 mb-4">
-        <PixelText size="xs" className="text-ink-300 mb-2 block">
-          Enter Disk Code
-        </PixelText>
-        <input
-          type="text"
-          value={code}
-          onChange={(e) => setCode(e.target.value.toUpperCase())}
-          placeholder="RD-01"
-          maxLength={6}
-          className="w-full bg-ink-900 border-2 border-ink-600 px-3 py-2 font-body text-xl text-ink-100 placeholder:text-ink-500 focus:outline-none focus:border-forest-500"
-        />
-        <BodyText className="text-ink-400 text-sm mt-2 block">
-          Enter a code like RD-01 through RD-20.
-        </BodyText>
-      </PixelPanel>
-      <PixelButton
-        variant="primary"
-        fullWidth
-        onClick={() => onSubmit(code)}
-        disabled={code.length < 4}
-        className="mb-2"
-      >
-        <ScanLine size={16} /> Scan
-      </PixelButton>
-      <PixelButton fullWidth onClick={onCancel}>
-        <ArrowLeft size={16} /> Back
-      </PixelButton>
-    </motion.div>
   );
 }
 
@@ -423,7 +309,6 @@ function SuccessModal({
         className="w-full max-w-sm"
       >
         <PixelPanel variant="gold" className="p-6 text-center">
-          {/* Capture flash effect */}
           <motion.div
             initial={{ scale: 0, opacity: 1 }}
             animate={{ scale: 3, opacity: 0 }}
@@ -445,18 +330,12 @@ function SuccessModal({
                 <span className="text-7xl">{species.sprite}</span>
               )}
             </motion.div>
-            <PixelText size="md" className="text-forest-300 block mb-1">
-              {species.name}
-            </PixelText>
+            <PixelText size="md" className="text-forest-300 block mb-1">{species.name}</PixelText>
             <div className="flex justify-center mb-3">
               <ElementTag element={species.element} size="sm" />
             </div>
-            <PixelText size="xs" className="text-gold-300 block mb-1">
-              Disk {species.diskId}
-            </PixelText>
-            <BodyText className="text-ink-300 block mb-4 mt-2">
-              {species.description}
-            </BodyText>
+            <PixelText size="xs" className="text-gold-300 block mb-1">Disk {species.diskId}</PixelText>
+            <BodyText className="text-ink-300 block mb-4 mt-2">{species.description}</BodyText>
             <div className="flex gap-2">
               <PixelButton variant="primary" fullWidth onClick={onConfirm}>
                 <Disc size={14} /> Capture

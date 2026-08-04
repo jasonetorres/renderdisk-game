@@ -103,7 +103,7 @@ export function TrainerProfile() {
       ) : (
         <PixelPanel className="p-4 mb-4">
           <PixelText size="xs" className="text-ink-500 block text-center py-2">
-            No creature yet — scan a floppy disk!
+            No creature yet — find a disk and enter its number!
           </PixelText>
         </PixelPanel>
       )}

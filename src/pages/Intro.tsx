@@ -70,13 +70,13 @@ const SCENES: Scene[] = [
   {
     bg: 'from-violet-900/50 via-ink-900 to-ink-900',
     accent: 'text-violet-300',
-    text: "Now. 20 disks are at RenderATL. You find me, I hand you one. Each one holds a creature. Scan it to awaken it and enter the game.",
+    text: "Now. 20 disks are at RenderATL. You find me, I hand you one. Each one holds a creature. Enter the number written on it to awaken it and enter the game.",
   },
   {
     bg: 'from-ocean-900/40 via-ink-900 to-ink-900',
     accent: 'text-ocean-300',
     speaker: 'Jason',
-    text: "Find more disks. Scan them. Fill your Binder. Then battle the four Guardians — Roxy, Danny, Francesco, and April. Each one guards a piece of the legend.",
+    text: "Find more disks. Enter their numbers. Fill your Binder. Then battle the four Guardians — Roxy, Danny, Francesco, and April. Each one guards a piece of the legend.",
   },
   {
     bg: 'from-gold-900/40 via-ink-900 to-ink-900',

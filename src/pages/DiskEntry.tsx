@@ -29,7 +29,7 @@ export function DiskEntry() {
   const [pageState, setPageState] = useState<PageState>('preview');
   const [lockedMessage, setLockedMessage] = useState('');
 
-  // Resolve unique QR token → RD-XX (also accepts legacy RD-01/rd01 format)
+  // Resolve token or plain number → RD-XX
   const diskCode = resolveDiskCode(code ?? '');
   const species = diskCode ? getSpecies(diskCode) : null;
 
@@ -132,7 +132,7 @@ export function DiskEntry() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
         <PixelText size="md" className="text-rust-400 mb-3">Invalid Disk</PixelText>
-        <BodyText className="text-ink-300 mb-6">This QR code doesn't match any known RenderDisk.</BodyText>
+        <BodyText className="text-ink-300 mb-6">This code doesn't match any known RenderDisk.</BodyText>
         <PixelButton onClick={() => navigate('/game')}>Go to Menu</PixelButton>
       </div>
     );

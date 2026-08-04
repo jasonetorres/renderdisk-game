@@ -35,9 +35,16 @@ export function resolveDiskCode(raw: string): string | null {
   // Unique QR token first
   if (DISK_CODE_MAP[upper]) return DISK_CODE_MAP[upper];
 
-  // Fallback: accept legacy RD-01 / RD01 / rd-01 format
-  const match = upper.match(/^RD-?(\d+)$/);
-  if (match) return `RD-${match[1].padStart(2, '0')}`;
+  // Accept RD-01 / RD01 / rd-01 format
+  const rdMatch = upper.match(/^RD-?(\d+)$/);
+  if (rdMatch) return `RD-${rdMatch[1].padStart(2, '0')}`;
+
+  // Accept plain numbers written on the physical disk: "1", "01", "12", etc.
+  const numMatch = upper.match(/^(\d{1,2})$/);
+  if (numMatch) {
+    const n = parseInt(numMatch[1], 10);
+    if (n >= 1 && n <= 20) return `RD-${String(n).padStart(2, '0')}`;
+  }
 
   return null;
 }
