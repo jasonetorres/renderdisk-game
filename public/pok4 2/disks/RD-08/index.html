@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+  <title>RenderDisk RD-08</title>
+  <meta property="og:title" content="You found a RenderDisk!"/>
+  <meta property="og:description" content="Scan to capture Buzzle — disk 08 of 20."/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      min-height:100svh;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      background:#041208;
+      background-image:
+        linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+      background-size:32px 32px;
+      font-family:'Press Start 2P',monospace;
+      color:#f1f5f9;padding:28px 18px;text-align:center;
+    }
+    .glow{
+      position:fixed;top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      width:500px;height:500px;border-radius:50%;
+      background:radial-gradient(circle,#4ade8028 0%,transparent 70%);
+      pointer-events:none;
+      animation:pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse{
+      0%,100%{opacity:.5;transform:translate(-50%,-50%) scale(1)}
+      50%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}
+    }
+    .card{
+      position:relative;width:100%;max-width:340px;
+      background:rgba(0,0,0,.6);
+      border:3px solid #4ade80;
+      box-shadow:0 0 40px #4ade8044,inset 0 0 20px rgba(0,0,0,.5);
+      padding:28px 22px 32px;
+      animation:up .45s cubic-bezier(.22,.68,0,1.2) both;
+    }
+    @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .badge{
+      position:absolute;top:-14px;right:14px;
+      background:#15803d;color:#fff;
+      font-size:8px;padding:4px 10px;
+      border:2px solid #4ade8099;
+    }
+    .label{
+      font-size:8px;letter-spacing:.2em;color:#4ade80;
+      margin-bottom:22px;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .label::before,.label::after{
+      content:'';flex:1;height:1px;background:#4ade8044;
+    }
+    .sprite{
+      width:152px;height:152px;object-fit:contain;
+      image-rendering:pixelated;
+      margin:0 auto 20px;display:block;
+      filter:drop-shadow(0 0 18px #4ade8099);
+      animation:float 3s ease-in-out infinite;
+    }
+    .fallback{
+      font-size:88px;line-height:1;
+      margin:0 auto 20px;display:none;
+      animation:float 3s ease-in-out infinite;
+    }
+    @keyframes float{
+      0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}
+    }
+    .name{font-size:17px;color:#fff;margin-bottom:14px;text-shadow:0 0 20px #4ade80}
+    .tags{display:flex;justify-content:center;gap:8px;margin-bottom:28px;flex-wrap:wrap}
+    .tag{font-size:8px;padding:5px 10px;border:2px solid;letter-spacing:.1em}
+    .tag-el{color:#4ade80;border-color:#4ade8077;background:#4ade8014}
+    .tag-ra{color:#4ade80;border-color:#4ade8077;background:#4ade8014}
+    .cta{
+      display:block;width:100%;padding:16px 10px;
+      background:#4ade80;color:#000;
+      font-family:'Press Start 2P',monospace;
+      font-size:10px;letter-spacing:.08em;
+      border:none;cursor:pointer;text-decoration:none;
+      box-shadow:0 4px 0 #15803d,0 6px 20px rgba(0,0,0,.4);
+      transition:transform .1s,box-shadow .1s;margin-bottom:16px;
+    }
+    .cta:active{transform:translateY(2px);box-shadow:0 2px 0 #15803d}
+    .hint{font-size:7px;color:#475569;letter-spacing:.1em;line-height:2}
+    .url{font-size:7px;color:#4ade8088;margin-top:10px;word-break:break-all;letter-spacing:.05em}
+  </style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="card">
+    <div class="badge">#08/20</div>
+    <div class="label">💾 RENDERDISK &middot; RD-08</div>
+    <img src="./creature.png" alt="Buzzle" class="sprite"
+      onerror="this.style.display='none';document.getElementById('fb').style.display='block'"/>
+    <span id="fb" class="fallback">🐝</span>
+    <div class="name">Buzzle</div>
+    <div class="tags">
+      <span class="tag tag-el">Nature</span>
+      <span class="tag tag-ra">Uncommon</span>
+    </div>
+    <a href="https://renderdisk.vercel.app/disk/N79SX86E" class="cta">💾 &nbsp;CAPTURE THIS DISK</a>
+    <p class="hint">RENDERATL &middot; AUGUST 2026<br/>ONE OF 20 HIDDEN DISKS</p>
+    <p class="url">https://renderdisk.vercel.app/disk/N79SX86E</p>
+  </div>
+</body>
+</html>

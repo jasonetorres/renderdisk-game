@@ -1,0 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    margin: 0;
+    background-color: #0f0f1b;
+    color: #e8e8f5;
+    font-family: 'VT323', monospace;
+    overflow-x: hidden;
+    touch-action: manipulation;
+  }
+
+  button {
+    font-family: inherit;
+  }
+}
+
+@layer components {
+  /* Pixel border — a chunky SNES-style beveled frame */
+  .pixel-frame {
+    @apply relative bg-ink-800 border-4 border-ink-900 shadow-pixelInset;
+  }
+  .pixel-frame-raised {
+    @apply relative bg-ink-700 border-4 border-ink-600 shadow-pixel;
+  }
+  .pixel-frame-gold {
+    @apply relative bg-ink-800 border-4 border-gold-600 shadow-pixel;
+  }
+
+  /* Pixel button */
+  .pixel-btn {
+    @apply relative inline-flex items-center justify-center gap-2 px-4 py-3
+           font-pixel text-xs uppercase tracking-wider text-ink-100
+           bg-ink-700 border-2 border-ink-900 shadow-pixel
+           transition-all duration-100 select-none cursor-pointer
+           hover:bg-ink-600 hover:-translate-y-0.5
+           active:translate-y-0.5 active:shadow-none
+           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0;
+  }
+  .pixel-btn-primary {
+    @apply bg-forest-700 border-forest-900 hover:bg-forest-600;
+  }
+  .pixel-btn-ember {
+    @apply bg-ember-700 border-ember-900 hover:bg-ember-600;
+  }
+  .pixel-btn-ocean {
+    @apply bg-ocean-700 border-ocean-900 hover:bg-ocean-600;
+  }
+  .pixel-btn-gold {
+    @apply bg-gold-700 border-gold-900 hover:bg-gold-600 text-ink-900;
+  }
+
+  /* Pixel text */
+  .pixel-text {
+    @apply font-pixel text-xs leading-relaxed tracking-wide;
+  }
+  .pixel-text-lg {
+    @apply font-pixel text-sm leading-relaxed tracking-wide;
+  }
+  .pixel-text-sm {
+    @apply font-pixel text-[10px] leading-relaxed tracking-wide;
+  }
+  .pixel-text-xs {
+    @apply font-pixel text-[8px] leading-relaxed tracking-wide;
+  }
+  .body-text {
+    @apply font-body text-xl leading-snug;
+  }
+
+  /* CRT scanline overlay */
+  .crt-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.12) 0px,
+      rgba(0, 0, 0, 0.12) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    mix-blend-mode: multiply;
+  }
+
+  /* Vignette */
+  .vignette {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9998;
+    background: radial-gradient(
+      ellipse at center,
+      transparent 50%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+  }
+}
+
+@layer utilities {
+  .text-shadow-pixel {
+    text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6);
+  }
+  .text-shadow-pixel-sm {
+    text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.6);
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

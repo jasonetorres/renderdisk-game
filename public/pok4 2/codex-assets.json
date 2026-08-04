@@ -1,0 +1,178 @@
+{
+  "_info": {
+    "description": "Source-of-truth asset manifest for the trainer codex system. All paths are relative to bases/. Color slots: 'colorSlots' = how many clothing color pickers to show (Main, Accent, 3rd, 4th). Hair accessories use 'accSlots'.",
+    "bodyTypes": ["average-body", "small-body"],
+    "bodyTypePrefix": { "average-body": "av", "small-body": "sm" }
+  },
+
+  "body": {
+    "label": "Body Type",
+    "folder": "bases/body",
+    "options": [
+      { "id": "average-body", "label": "Average" },
+      { "id": "small-body",   "label": "Small" }
+    ]
+  },
+
+  "head": {
+    "label": "Head Shape",
+    "folder": "bases/head",
+    "options": [
+      { "id": "oval-head",  "label": "Oval" },
+      { "id": "round-head", "label": "Round" },
+      { "id": "square-jaw", "label": "Square Jaw" }
+    ]
+  },
+
+  "eyes": {
+    "label": "Eyes",
+    "folder": "bases/eyes",
+    "options": [
+      { "id": "determined", "label": "Determined" },
+      { "id": "soft",       "label": "Soft" },
+      { "id": "narrow",     "label": "Narrow" },
+      { "id": "hooded",     "label": "Hooded" },
+      { "id": "menacing",   "label": "Menacing" },
+      { "id": "feminine",   "label": "Feminine" },
+      { "id": "vacant",     "label": "Vacant" },
+      { "id": "cranky",     "label": "Cranky" },
+      { "id": "tired",      "label": "Tired" },
+      { "id": "lashes",     "label": "Lashes" }
+    ]
+  },
+
+  "hair": {
+    "label": "Hair",
+    "folder": "bases/hair",
+    "note": "accSlots: number of hair-accessory color pickers (0 = none). hair-back and hair-front overlays are auto-derived.",
+    "options": [
+      { "id": "dragon-master",  "label": "Dragon Master",   "accSlots": 0 },
+      { "id": "chic",           "label": "Chic",             "accSlots": 0 },
+      { "id": "porcupine",      "label": "Porcupine",        "accSlots": 0 },
+      { "id": "nest",           "label": "Nest",             "accSlots": 0 },
+      { "id": "high-ponytail",  "label": "High Ponytail",    "accSlots": 0 },
+      { "id": "mane",           "label": "Mane",             "accSlots": 0 },
+      { "id": "silver-fox",     "label": "Silver Fox",       "accSlots": 0 },
+      { "id": "magnate",        "label": "Magnate",          "accSlots": 0 },
+      { "id": "receding",       "label": "Receding",         "accSlots": 0 },
+      { "id": "cowlick",        "label": "Cowlick",          "accSlots": 0 },
+      { "id": "heli-pad",       "label": "Heli-Pad",         "accSlots": 0 },
+      { "id": "professional",   "label": "Professional",     "accSlots": 0 },
+      { "id": "mop",            "label": "Mop",              "accSlots": 0 },
+      { "id": "pigtails",       "label": "Pigtails",         "accSlots": 1 },
+      { "id": "crew-cut",       "label": "Crew Cut",         "accSlots": 0 },
+      { "id": "flared-curtains","label": "Flared Curtains",  "accSlots": 0 },
+      { "id": "dainty",         "label": "Dainty",           "accSlots": 1 },
+      { "id": "geezer",         "label": "Geezer",           "accSlots": 0 },
+      { "id": "serene",         "label": "Serene",           "accSlots": 1 },
+      { "id": "outta-my-face",  "label": "Outta My Face",    "accSlots": 1 },
+      { "id": "rocker",         "label": "Rocker",           "accSlots": 0 },
+      { "id": "disheveled",     "label": "Disheveled",       "accSlots": 0 },
+      { "id": "pixie",          "label": "Pixie",            "accSlots": 0 },
+      { "id": "closer",         "label": "Closer",           "accSlots": 0 },
+      { "id": "bangs",          "label": "Bangs",            "accSlots": 0 },
+      { "id": "pageant-queen",  "label": "Pageant Queen",    "accSlots": 0 },
+      { "id": "pippi",          "label": "Pippi",            "accSlots": 1 },
+      { "id": "prodigy",        "label": "Prodigy",          "accSlots": 0 },
+      { "id": "framed",         "label": "Framed",           "accSlots": 0 },
+      { "id": "afro",           "label": "Afro",             "accSlots": 0 },
+      { "id": "raven",          "label": "Raven",            "accSlots": 0 },
+      { "id": "waves",          "label": "Waves",            "accSlots": 0 }
+    ]
+  },
+
+  "hat": {
+    "label": "Hat",
+    "folder": "bases/hat",
+    "note": "colorSlots: number of hat color pickers. hat-back, hat-mask, hat-back-mask overlays are auto-derived. 0 = no hat (none option).",
+    "allowNone": true,
+    "options": [
+      { "id": "fitted-front", "label": "Fitted (Front)", "colorSlots": 2 },
+      { "id": "fitted-back",  "label": "Fitted (Back)",  "colorSlots": 2 },
+      { "id": "fedora",       "label": "Fedora",          "colorSlots": 2 },
+      { "id": "durag",        "label": "Durag",           "colorSlots": 1 }
+    ]
+  },
+
+  "top": {
+    "label": "Top",
+    "note": "Folder is prefixed by body type: av-top or sm-top. colorSlots drives picker count.",
+    "folderByBody": { "average-body": "bases/av-top", "small-body": "bases/sm-top" },
+    "allowNone": false,
+    "options": [
+      { "id": "vest",    "label": "Vest",    "colorSlots": 2, "note": "Open-front vest, body + collar accent" },
+      { "id": "blouse",  "label": "Blouse",  "colorSlots": 2, "note": "Rounded collar, body + lapel detail" },
+      { "id": "tee",     "label": "Tee",     "colorSlots": 1, "note": "Simple crew-neck T-shirt, single color" },
+      { "id": "hoodie",  "label": "Hoodie",  "colorSlots": 2, "note": "Zip hoodie, inverted color zones from vest" },
+      { "id": "jacket",  "label": "Jacket",  "colorSlots": 3, "note": "Structured jacket, body + lapel + collar trim" },
+      { "id": "sweater", "label": "Sweater", "colorSlots": 2, "note": "Knit sweater, body + ribbed hem/cuff accent" }
+    ]
+  },
+
+  "bottom": {
+    "label": "Bottom",
+    "folderByBody": { "average-body": "bases/av-bottom", "small-body": "bases/sm-bottom" },
+    "allowNone": false,
+    "options": [
+      { "id": "slacks",  "label": "Slacks",  "colorSlots": 1, "note": "Straight-leg trousers, single color" },
+      { "id": "shorts",  "label": "Shorts",  "colorSlots": 1, "note": "Casual shorts, single color" },
+      { "id": "jeans",   "label": "Jeans",   "colorSlots": 2, "note": "Trousers with seam accent in 2nd color" },
+      { "id": "joggers", "label": "Joggers", "colorSlots": 2, "note": "Track pants with contrast ankle cuff" },
+      { "id": "skirt",   "label": "Skirt",   "colorSlots": 1, "note": "A-line skirt, widened hem" }
+    ]
+  },
+
+  "shoes": {
+    "label": "Shoes",
+    "folderByBody": { "average-body": "bases/av-shoes", "small-body": "bases/sm-shoes" },
+    "allowNone": false,
+    "options": [
+      { "id": "simple",   "label": "Simple",   "colorSlots": 1, "note": "Basic shoes, single color" },
+      { "id": "boots",    "label": "Boots",    "colorSlots": 1, "note": "Ankle boots, extra height" },
+      { "id": "sneakers", "label": "Sneakers", "colorSlots": 2, "note": "Sneakers with contrast sole stripe" },
+      { "id": "sandals",  "label": "Sandals",  "colorSlots": 1, "note": "Open sandals, strap silhouette" }
+    ]
+  },
+
+  "outfit": {
+    "label": "Outfit (Combined)",
+    "note": "Full-body outfit replaces top+bottom+shoes. colorSlots drives picker count.",
+    "folderByBody": { "average-body": "bases/av-outfit", "small-body": "bases/sm-outfit" },
+    "allowNone": false,
+    "options": [
+      { "id": "farmer-1", "label": "Farmer",   "colorSlots": 3 },
+      { "id": "gi",       "label": "Gi",        "colorSlots": 2 },
+      { "id": "snowsuit", "label": "Snowsuit",  "colorSlots": 2 }
+    ]
+  },
+
+  "layerOrder": {
+    "note": "Correct draw order for compositing. hat-back/hair-back go under body; head+hair+hat go on top.",
+    "backLayers":  ["hat-back", "hair-back"],
+    "bodyLayer":   "body",
+    "clothingLayers": ["outfit_or_[top,bottom,shoes]"],
+    "headLayers":  ["head", "eyes", "hair", "hat", "hair-front"],
+    "maskLayers":  ["head-mask", "hat-mask", "hat-back-mask"]
+  },
+
+  "colorPalettes": {
+    "skin": [
+      "#f8d0b8", "#a88050", "#c89060", "#f8e0b8",
+      "#986860", "#986840", "#58402e"
+    ],
+    "hair": [
+      "#404040", "#342820", "#4b382c", "#684828",
+      "#82662d", "#b2864b", "#c4b880", "#dedbb8",
+      "#888480", "#c4beb8"
+    ],
+    "iris": [
+      "#000000", "#402016", "#7c6424", "#506c32",
+      "#70207c", "#70a0c0"
+    ],
+    "clothing": [
+      "#cbcbce", "#383838", "#e06040", "#4060e0",
+      "#a040e0", "#309ea4", "#c0709c", "#70c070",
+      "#f8b020", "#784040", "#609038", "#989090"
+    ]
+  }
+}
